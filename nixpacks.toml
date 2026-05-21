@@ -1,0 +1,7 @@
+[phases.setup]
+cmds = [
+  "chmod -R 775 storage bootstrap/cache"
+]
+
+[start]
+cmd = "php artisan storage:link && php artisan migrate --force && php-fpm -D && nginx -g 'daemon off;'"
