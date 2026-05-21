@@ -3,35 +3,34 @@ import { motion } from 'framer-motion';
 import { Link } from '@inertiajs/react';
 import { Flame, Star, Sparkles, Tag } from 'lucide-react';
 
-// --- Smart Badge Component (Same as ProductShow) ---
 const ProductBadge = ({ tag, discount }) => {
     if (!tag) return null;
 
     const badges = {
         promo: {
-            bg: 'bg-red-500 text-white',
+            bg: 'bg-burgundy text-cream',
             icon: <Flame size={12} className="mr-1" />,
             text: discount ? `Promo -${discount}%` : 'Promo'
         },
         bestseller: {
-            bg: 'bg-amber-400 text-amber-950',
+            bg: 'bg-charcoal text-cream',
             icon: <Star size={12} className="mr-1" fill="currentColor" />,
             text: 'Best Seller'
         },
         nouveaute: {
-            bg: 'bg-emerald-500 text-white',
+            bg: 'bg-cream text-burgundy border border-burgundy/20',
             icon: <Sparkles size={12} className="mr-1" />,
             text: 'Nouveau'
         }
     };
 
-    const config = badges[tag] || { bg: 'bg-stone-800 text-white', icon: <Tag size={12} className="mr-1"/>, text: tag };
+    const config = badges[tag] || { bg: 'bg-charcoal text-cream', icon: <Tag size={12} className="mr-1"/>, text: tag };
 
     return (
         <motion.div
             initial={{ opacity: 0, scale: 0.8, x: -10 }}
             animate={{ opacity: 1, scale: 1, x: 0 }}
-            className={`absolute top-2 left-2 z-10 flex items-center text-[10px] md:text-xs font-bold px-2 py-1 md:px-3 md:py-1.5 rounded-full shadow-md backdrop-blur-sm ${config.bg}`}
+            className={`absolute top-3 left-3 z-10 flex items-center text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 shadow-sm backdrop-blur-sm ${config.bg}`}
         >
             {config.icon}
             <span>{config.text}</span>
@@ -44,21 +43,23 @@ export default function Products({ products, currentCategory }) {
 
     return (
         <MainLayout>
-            <div className="max-w-7xl mx-auto px-4 py-8">
-                <h1 className="text-3xl font-serif text-center mb-8 capitalize">
-                    {currentCategory === 'tous' ? 'Notre Collection' : `Collection ${currentCategory}`}
+            <div className="max-w-7xl mx-auto px-4 pb-16">
+                
+                {/* En-tête mis à jour avec la police Dream Avenue et l'espacement corrigé */}
+                <h1 className="text-4xl md:text-5xl font-dream text-center mb-10 text-charcoal tracking-wide capitalize">
+                    {currentCategory === 'tous' ? 'La Collection' : `Collection ${currentCategory}`}
                 </h1>
 
-                {/* Filtres par pilules (Très ergonomique sur mobile) */}
-                <div className="flex overflow-x-auto space-x-3 pb-4 mb-8 hide-scrollbar justify-start md:justify-center">
+                {/* Filtres par pilules avec les couleurs Vellure */}
+                <div className="flex overflow-x-auto space-x-4 pb-4 mb-12 hide-scrollbar justify-start md:justify-center">
                     {categories.map((cat) => (
                         <Link
                             key={cat}
                             href={route('products', { category: cat })}
-                            className={`whitespace-nowrap px-6 py-2 rounded-full text-sm font-medium transition ${
+                            className={`whitespace-nowrap px-8 py-2.5 text-[11px] uppercase tracking-widest font-bold transition duration-300 ${
                                 currentCategory === cat 
-                                ? 'bg-sky-700 text-white shadow-md' 
-                                : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-100'
+                                ? 'bg-burgundy text-cream shadow-md' 
+                                : 'bg-transparent text-charcoal border border-burgundy/20 hover:bg-burgundy/5'
                             }`}
                         >
                             {cat.charAt(0).toUpperCase() + cat.slice(1)}
@@ -69,46 +70,46 @@ export default function Products({ products, currentCategory }) {
                 {/* Grille de produits : 2 colonnes mobile, 4 colonnes bureau */}
                 <motion.div 
                     layout
-                    className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8"
+                    className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8 lg:gap-10"
                 >
                     {products.map((product) => (
                         <motion.div 
                             key={product.id}
-                            initial={{ opacity: 0, scale: 0.9 }}
+                            initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.3 }}
-                            className="flex flex-col group bg-white rounded-xl p-2 md:p-3 shadow-sm hover:shadow-xl transition-all duration-300 h-full"
+                            transition={{ duration: 0.4 }}
+                            className="flex flex-col group h-full"
                         >
                             <Link href={route('product.show', product.id)} className="block w-full h-full cursor-pointer flex flex-col">
                                 
-                                {/* Ratio 3/4 pour des images de mode uniformes */}
-                                <div className="relative aspect-[3/4] overflow-hidden bg-stone-200 rounded-lg mb-3">
-                                    {/* 🔴 Ajout du badge intelligent ici 🔴 */}
+                                <div className="relative aspect-[3/4] overflow-hidden bg-cream/50 mb-4">
                                     <ProductBadge tag={product.tag} discount={product.discount_pct} />
 
                                     <img 
                                         src={product.image} 
                                         alt={product.name} 
-                                        className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-500"
+                                        className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-700"
                                     />
                                     
-                                    {/* Bouton "Voir le produit" au survol sur Desktop */}
-                                    <div className="absolute bottom-2 left-2 right-2 bg-white/90 backdrop-blur text-stone-800 text-xs py-2 rounded-md font-semibold opacity-0 group-hover:opacity-100 transition md:block hidden shadow-sm text-center">
-                                        Voir le produit
+                                    {/* Bouton "Voir le produit" */}
+                                    <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out hidden md:block">
+                                        <button className="bg-cream/95 text-burgundy w-full py-3 text-[10px] uppercase font-bold tracking-[0.1em] hover:bg-burgundy hover:text-cream transition-colors duration-300 shadow-lg">
+                                            Découvrir
+                                        </button>
                                     </div>
                                 </div>
 
-                                <h3 className="text-sm font-medium text-stone-800 truncate group-hover:text-sky-700 transition mb-1">
+                                {/* Textes des produits mis à jour */}
+                                <h3 className="text-sm font-medium text-charcoal truncate group-hover:text-burgundy transition mb-1 font-serif text-center">
                                     {product.name}
                                 </h3>
                                 
-                                {/* 🔴 Ajout du prix dynamique (Gère les promos) 🔴 */}
-                                <div className="mt-auto flex flex-wrap items-center gap-2">
-                                    <p className={`font-bold ${product.original_price ? 'text-red-600' : 'text-sky-700'}`}>
+                                <div className="mt-auto flex flex-wrap items-center justify-center gap-2">
+                                    <p className={`text-sm ${product.original_price ? 'text-charcoal font-bold' : 'text-burgundy'}`}>
                                         {parseFloat(product.price).toFixed(2)} DT
                                     </p>
                                     {product.original_price && (
-                                        <p className="text-xs text-stone-400 line-through">
+                                        <p className="text-[11px] text-charcoal/40 line-through">
                                             {parseFloat(product.original_price).toFixed(2)} DT
                                         </p>
                                     )}
@@ -119,8 +120,8 @@ export default function Products({ products, currentCategory }) {
                     ))}
                     
                     {products.length === 0 && (
-                        <div className="col-span-full text-center py-12 text-stone-500">
-                            Aucun produit trouvé dans cette catégorie.
+                        <div className="col-span-full flex justify-center py-20">
+                            <p className="text-charcoal/50 font-serif text-lg">Aucun modèle trouvé dans cette catégorie.</p>
                         </div>
                     )}
                 </motion.div>

@@ -1,12 +1,11 @@
 import MainLayout from '@/Layouts/MainLayout';
 import { motion } from 'framer-motion';
 import { Link } from '@inertiajs/react';
-import { Sun, Droplet, ShieldCheck } from 'lucide-react'; // Icônes pour la section textile
+import { Sun, Droplet, ShieldCheck } from 'lucide-react';
 
 export default function Home() {
-    // Faux produits pour la section Tendance (à remplacer par la BDD plus tard)
     const trendingProducts = [
-        { id: 1, name: "Ensemble Dalia Noir", price: "79.99", img: "/image/image1.jpg", category: "voilée" },
+        { id: 1, name: "Ensemble Dalia Noir", price: "79.99", img: "/image/image1.png", category: "voilée" },
         { id: 2, name: "Maillot Azure Une Pièce", price: "45.00", img: "/image/image4.jpg", category: "non voilée" },
         { id: 3, name: "Burkini Floral Premium", price: "89.00", img: "/image/image2.png", category: "voilée" },
         { id: 4, name: "Ensemble Enfant Sirène", price: "35.00", img: "/image/image3.png", category: "enfant" },
@@ -15,27 +14,36 @@ export default function Home() {
     return (
         <MainLayout>
             {/* Hero Section */}
-            <section className="relative h-[70vh] md:h-[85vh] flex items-center justify-center overflow-hidden">
-                <img 
-                    src="/image/image1.jpg" 
-                    alt="Hero Maillots Burkini" 
-                    className="absolute inset-0 w-full h-full object-cover object-top"
-                />
-                <div className="absolute inset-0 bg-stone-900/40"></div>
+            <section className="relative h-screen flex items-center justify-center overflow-hidden">
+                <motion.div 
+                    initial={{ scale: 1.1 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 10, ease: "easeOut" }}
+                    className="absolute inset-0 w-full h-full"
+                >
+                    <img 
+                        src="/image/hero3.png" 
+                        alt="Vellure Nouvelle Collection" 
+                        className="w-full h-full object-cover object-top"
+                    />
+                </motion.div>
+                {/* Elegant dark overlay */}
+                <div className="absolute inset-0 bg-charcoal/30"></div>
                 
                 <motion.div 
-                    initial={{ opacity: 0, y: 30 }}
+                    initial={{ opacity: 0, y: 40 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
-                    className="relative z-10 text-center text-white px-4"
+                    transition={{ duration: 1, delay: 0.2 }}
+                    className="relative z-10 text-center text-cream px-4 mt-16"
                 >
-                    <h1 className="text-4xl md:text-6xl font-serif mb-4 drop-shadow-md">L'Élégance à la Plage</h1>
-                    <p className="text-lg md:text-xl font-light mb-8 max-w-lg mx-auto drop-shadow-sm">
-                        Découvrez notre collection de maillots de bain conçue pour sublimer toutes les femmes, en alliant pudeur et modernité.
+                    <span className="text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block text-cream/80">Nouvelle Collection</span>
+                    <h1 className="text-5xl md:text-8xl font-dream mb-6 drop-shadow-lg tracking-wide">VELLURE</h1>
+                    <p className="text-base md:text-xl font-light mb-10 max-w-lg mx-auto drop-shadow-md text-cream/90">
+                        Sublimez votre été. Découvrez nos collections exclusives alliant pudeur, confort et élégance absolue.
                     </p>
                     <Link 
                         href={route('products')} 
-                        className="inline-block bg-white text-stone-900 px-8 py-4 rounded-full text-sm uppercase tracking-widest font-semibold hover:bg-sky-50 hover:scale-105 transition duration-300 shadow-lg"
+                        className="inline-block bg-cream text-burgundy px-10 py-4 text-[11px] uppercase tracking-[0.2em] font-bold hover:bg-burgundy hover:text-cream transition-all duration-500 shadow-[0_0_40px_rgba(0,0,0,0.3)]"
                     >
                         Découvrir la collection
                     </Link>
@@ -43,18 +51,19 @@ export default function Home() {
             </section>
 
             {/* Categories Section */}
-            <section className="py-20 px-4 max-w-7xl mx-auto">
+            <section className="py-24 px-4 max-w-7xl mx-auto bg-cream">
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-100px" }}
                     className="text-center mb-16"
                 >
-                    <h2 className="text-3xl md:text-4xl font-serif text-stone-800">Nos Catégories</h2>
-                    <div className="w-20 h-1 bg-sky-700 mx-auto mt-4 rounded-full"></div>
+                    <span className="text-burgundy text-[10px] font-bold uppercase tracking-[0.3em]">Notre Univers</span>
+                    <h2 className="text-4xl md:text-5xl font-dream text-charcoal mt-4 mb-6">Collections Vellure</h2>
+                    <div className="w-16 h-[1px] bg-burgundy mx-auto"></div>
                 </motion.div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10">
                     {[
                         { title: 'Non Voilée', img: '/image/image2.png', cat: 'non voilée' },
                         { title: 'Voilée', img: '/image/image3.png', cat: 'voilée' },
@@ -62,18 +71,20 @@ export default function Home() {
                     ].map((item, index) => (
                         <Link href={route('products', { category: item.cat })} key={index}>
                             <motion.div 
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                whileInView={{ opacity: 1, scale: 1 }}
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
-                                transition={{ delay: index * 0.1, duration: 0.5 }}
-                                whileHover={{ y: -10 }}
-                                className="relative h-96 rounded-2xl overflow-hidden group cursor-pointer shadow-xl"
+                                transition={{ delay: index * 0.2, duration: 0.7 }}
+                                className="relative h-[28rem] overflow-hidden group cursor-pointer"
                             >
-                                <img src={item.img} alt={item.title} className="w-full h-full object-cover transition duration-700 group-hover:scale-110" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-stone-900/90 via-stone-900/20 to-transparent flex items-end p-8">
-                                    <div>
-                                        <h3 className="text-white text-3xl font-serif mb-2">{item.title}</h3>
-                                        <span className="text-sky-300 text-sm uppercase tracking-wider font-semibold group-hover:text-white transition">Voir les modèles &rarr;</span>
+                                <img src={item.img} alt={item.title} className="w-full h-full object-cover transition duration-1000 group-hover:scale-105" />
+                                <div className="absolute inset-0 bg-charcoal/20 group-hover:bg-charcoal/40 transition duration-500 flex items-end justify-center pb-12">
+                                    <div className="text-center">
+                                        <h3 className="text-cream text-3xl font-dream mb-3 tracking-wide">{item.title}</h3>
+                                        <span className="text-cream/80 text-[10px] uppercase tracking-[0.2em] relative inline-block group-hover:text-cream transition">
+                                            Explorer
+                                            <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-[1px] bg-cream transition-all duration-300 group-hover:w-full"></span>
+                                        </span>
                                     </div>
                                 </div>
                             </motion.div>
@@ -83,25 +94,25 @@ export default function Home() {
             </section>
 
             {/* Trending Products Section */}
-            <section className="py-20 bg-stone-100/50">
+            <section className="py-24 bg-white">
                 <div className="max-w-7xl mx-auto px-4">
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="flex flex-col md:flex-row justify-between items-end mb-12"
+                        className="flex flex-col md:flex-row justify-between items-end mb-14"
                     >
                         <div>
-                            <h2 className="text-3xl md:text-4xl font-serif text-stone-800">Tendances du Moment</h2>
-                            <div className="w-20 h-1 bg-sky-700 mt-4 rounded-full"></div>
+                            <h2 className="text-4xl md:text-5xl font-dream text-charcoal mb-4">Pièces Maîtresses</h2>
+                            <div className="w-16 h-[1px] bg-burgundy"></div>
                         </div>
-                        <Link href={route('products')} className="text-sky-700 font-medium hover:text-sky-900 hidden md:block">
-                            Voir tout &rarr;
+                        <Link href={route('products')} className="text-burgundy text-[11px] font-bold uppercase tracking-[0.2em] hover:text-charcoal transition hidden md:inline-block relative group">
+                            Voir le vestiaire
+                            <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-charcoal transition-all duration-300 group-hover:w-full"></span>
                         </Link>
                     </motion.div>
 
-                    {/* Grille : 2 colonnes mobile, 4 bureau */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
                         {trendingProducts.map((product, index) => (
                             <motion.div 
                                 key={product.id}
@@ -109,31 +120,28 @@ export default function Home() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: index * 0.1 }}
-                                className="group cursor-pointer"
+                                className="group cursor-pointer text-center"
                             >
-                                <div className="relative aspect-[3/4] rounded-xl overflow-hidden mb-4 shadow-sm group-hover:shadow-xl transition duration-300">
-                                    <img src={product.img} alt={product.name} className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-500" />
-                                    {/* Badge Nouveauté */}
+                                <div className="relative aspect-[3/4] overflow-hidden mb-6 bg-cream/30">
+                                    <img src={product.img} alt={product.name} className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-700" />
                                     {index === 0 && (
-                                        <div className="absolute top-3 left-3 bg-white text-stone-900 text-[10px] uppercase font-bold px-3 py-1 rounded-full shadow-sm">Nouveau</div>
+                                        <div className="absolute top-4 left-4 bg-burgundy text-cream text-[9px] uppercase tracking-widest font-bold px-4 py-1">Exclusivité</div>
                                     )}
-                                    {/* Bouton au survol (Bureau) */}
-                                    <div className="absolute bottom-4 left-0 right-0 flex justify-center opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hidden md:flex">
-                                        <button className="bg-stone-900/90 backdrop-blur text-white px-6 py-3 rounded-full text-sm font-medium hover:bg-sky-700 w-10/12">
+                                    <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out hidden md:block">
+                                        <button className="bg-cream/95 text-burgundy w-full py-3 text-[10px] uppercase font-bold tracking-[0.1em] hover:bg-burgundy hover:text-cream transition-colors duration-300">
                                             Aperçu Rapide
                                         </button>
                                     </div>
                                 </div>
-                                <h3 className="text-sm md:text-base font-medium text-stone-800 truncate">{product.name}</h3>
-                                <p className="text-stone-500 text-xs capitalize mb-1">{product.category}</p>
-                                <p className="text-sky-700 font-bold">{product.price} €</p>
+                                <p className="text-charcoal/50 text-[10px] uppercase tracking-widest mb-2">{product.category}</p>
+                                <h3 className="text-sm font-medium text-charcoal mb-2 font-serif">{product.name}</h3>
+                                <p className="text-burgundy text-sm">{product.price} €</p>
                             </motion.div>
                         ))}
                     </div>
                     
-                    {/* Bouton Voir Tout Mobile */}
-                    <div className="mt-10 text-center md:hidden">
-                        <Link href={route('products')} className="inline-block border border-stone-800 text-stone-800 px-8 py-3 rounded-full text-sm font-medium">
+                    <div className="mt-16 text-center md:hidden">
+                        <Link href={route('products')} className="inline-block border border-burgundy text-burgundy px-10 py-3 text-[11px] font-bold uppercase tracking-[0.2em]">
                             Voir toute la collection
                         </Link>
                     </div>
@@ -141,63 +149,63 @@ export default function Home() {
             </section>
 
             {/* Textile Quality Section */}
-            <section className="py-24 bg-stone-900 text-stone-100 overflow-hidden">
-                <div className="max-w-7xl mx-auto px-4 flex flex-col lg:flex-row items-center gap-16">
-                    {/* Image gauche */}
+            <section className="py-24 bg-cream text-charcoal overflow-hidden border-t border-burgundy/10">
+                <div className="max-w-7xl mx-auto px-4 flex flex-col lg:flex-row items-center gap-20">
+                    
                     <motion.div 
                         initial={{ opacity: 0, x: -50 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
+                        transition={{ duration: 0.8 }}
                         className="w-full lg:w-1/2 relative"
                     >
-                        <div className="relative aspect-square md:aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl">
-                            <img src="/image/image4.jpg" alt="Qualité de nos textiles" className="w-full h-full object-cover" />
-                            <div className="absolute inset-0 bg-sky-900/20 mix-blend-multiply"></div>
+                        <div className="relative aspect-[4/5] md:aspect-[3/4] overflow-hidden">
+                            <img src="/image/image4.jpg" alt="L'Exigence Vellure" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 border border-burgundy/20 m-6"></div>
                         </div>
-                        {/* Décoration */}
-                        <div className="absolute -bottom-6 -right-6 w-48 h-48 bg-sky-700/30 rounded-full blur-3xl -z-10"></div>
                     </motion.div>
 
-                    {/* Contenu droite */}
                     <motion.div 
                         initial={{ opacity: 0, x: 50 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
+                        transition={{ duration: 0.8 }}
                         className="w-full lg:w-1/2"
                     >
-                        <h2 className="text-3xl md:text-4xl font-serif mb-6 text-white">Nos Textiles, Votre Confort.</h2>
-                        <p className="text-stone-400 mb-10 text-lg font-light leading-relaxed">
-                            Nous concevons nos maillots Burkini avec des tissus de la plus haute qualité. Chaque pièce est pensée pour épouser parfaitement vos mouvements tout en respectant votre peau et vos valeurs.
+                        <span className="text-burgundy text-[10px] font-bold uppercase tracking-[0.3em] mb-4 block">Le Savoir-Faire</span>
+                        <h2 className="text-4xl md:text-6xl font-dream mb-8 text-charcoal">L'Exigence Absolue</h2>
+                        <p className="text-charcoal/70 mb-12 text-lg font-light leading-relaxed">
+                            Chaque pièce de la collection Vellure est pensée pour sublimer la silhouette tout en respectant vos valeurs. Nous sélectionnons des étoffes nobles qui épousent vos mouvements avec grâce.
                         </p>
 
-                        <div className="space-y-8">
-                            <div className="flex items-start gap-4">
-                                <div className="bg-sky-800 p-3 rounded-lg text-white shrink-0">
-                                    <Droplet size={24} />
+                        <div className="space-y-10">
+                            <div className="flex items-start gap-6 group">
+                                <div className="text-burgundy mt-1 group-hover:scale-110 transition duration-300">
+                                    <Droplet size={28} strokeWidth={1} />
                                 </div>
                                 <div>
-                                    <h4 className="text-xl font-medium text-white mb-2">Séchage Rapide & Léger</h4>
-                                    <p className="text-stone-400 text-sm">Notre technologie de tissu permet à l'eau de s'évacuer rapidement. Ne restez plus mouillée une fois sortie de l'eau.</p>
+                                    <h4 className="text-lg font-dream tracking-wide text-charcoal mb-2">Tissé pour l'océan</h4>
+                                    <p className="text-charcoal/60 text-sm font-light leading-relaxed">Une technologie d'évacuation permettant un séchage instantané, pour une élégance ininterrompue hors de l'eau.</p>
                                 </div>
                             </div>
 
-                            <div className="flex items-start gap-4">
-                                <div className="bg-sky-800 p-3 rounded-lg text-white shrink-0">
-                                    <Sun size={24} />
+                            <div className="flex items-start gap-6 group">
+                                <div className="text-burgundy mt-1 group-hover:scale-110 transition duration-300">
+                                    <Sun size={28} strokeWidth={1} />
                                 </div>
                                 <div>
-                                    <h4 className="text-xl font-medium text-white mb-2">Protection Anti-UV (UPF 50+)</h4>
-                                    <p className="text-stone-400 text-sm">Profitez du soleil en toute sérénité. Notre tissu agit comme un bouclier contre les rayons nocifs pour préserver votre peau.</p>
+                                    <h4 className="text-lg font-dream tracking-wide text-charcoal mb-2">Bouclier Solaire</h4>
+                                    <p className="text-charcoal/60 text-sm font-light leading-relaxed">Une protection UPF 50+ intégrée au cœur des fibres, préservant votre peau des rayons nocifs avec légèreté.</p>
                                 </div>
                             </div>
 
-                            <div className="flex items-start gap-4">
-                                <div className="bg-sky-800 p-3 rounded-lg text-white shrink-0">
-                                    <ShieldCheck size={24} />
+                            <div className="flex items-start gap-6 group">
+                                <div className="text-burgundy mt-1 group-hover:scale-110 transition duration-300">
+                                    <ShieldCheck size={28} strokeWidth={1} />
                                 </div>
                                 <div>
-                                    <h4 className="text-xl font-medium text-white mb-2">Opacité & Résistance au Chlore</h4>
-                                    <p className="text-stone-400 text-sm">Même mouillé, le tissu reste parfaitement opaque et ne colle pas à la peau. Il résiste également au sel de mer et au chlore des piscines.</p>
+                                    <h4 className="text-lg font-dream tracking-wide text-charcoal mb-2">Opacité & Maintien</h4>
+                                    <p className="text-charcoal/60 text-sm font-light leading-relaxed">Un drapé fluide garantissant une opacité totale même mouillé, résistant au chlore et au sel marin avec brio.</p>
                                 </div>
                             </div>
                         </div>

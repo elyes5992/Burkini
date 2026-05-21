@@ -1,11 +1,26 @@
-import { useState } from 'react';
-
-import { Menu, X, ShoppingBag,  Mail, Phone, MapPin } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Menu, X, ShoppingBag, Mail, Phone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, usePage } from '@inertiajs/react';
 
 export default function MainLayout({ children }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => setScrolled(window.scrollY > 20);
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // Empêcher le scroll quand le menu mobile est ouvert
+    useEffect(() => {
+        if (isMobileMenuOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+    }, [isMobileMenuOpen]);
 
     const navLinks = [
         { name: 'Accueil', href: route('home') },
@@ -15,147 +30,220 @@ export default function MainLayout({ children }) {
         { name: 'Enfant', href: route('products', { category: 'enfant' }) },
         { name: 'À Propos', href: route('about') },
     ];
-    const { cartCount } = usePage().props;
+
+    const leftLinks = navLinks.slice(0, 3);
+    const rightLinks = navLinks.slice(3, 6);
+    
+    // Fallback si cartCount n'est pas défini
+    const { cartCount = 0 } = usePage().props || {};
+
+    const menuVars = {
+        initial: { opacity: 0, clipPath: "polygon(0 0, 100% 0, 100% 0, 0 0)" },
+        animate: { opacity: 1, clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)", transition: { duration: 0.6, ease: [0.33, 1, 0.68, 1] } },
+        exit: { opacity: 0, clipPath: "polygon(0 0, 100% 0, 100% 0, 0 0)", transition: { duration: 0.5, ease: [0.11, 0, 0.5, 0] } }
+    };
+    
+    // CORRECTION : L'animation du texte cherchait 'open' au lieu de 'animate'
+    const linkVars = {
+        initial: { y: 30, opacity: 0 },
+        animate: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } }
+    };
 
     return (
-        <div className="min-h-screen flex flex-col bg-stone-50 font-sans text-stone-800 overflow-x-hidden">
+        <div className="min-h-screen flex flex-col bg-cream font-sans text-charcoal overflow-x-hidden selection:bg-burgundy selection:text-cream">
             {/* Navbar */}
-            <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm border-b border-stone-100">
+            <nav className={`fixed w-full top-0 z-50 transition-all duration-700 ${scrolled ? 'bg-cream/95 backdrop-blur-md py-4 shadow-sm' : 'bg-transparent py-6'}`}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-20">
-                        {/* Logo mis à jour */}
-                        <Link href={route('home')} className="text-xl md:text-2xl font-serif tracking-widest font-bold text-sky-900">
-                            MAILLOTS <span className="font-light">BURKINI</span>
-                        </Link>
-
-                        {/* Desktop Menu */}
-                        <div className="hidden md:flex space-x-8">
-                            {navLinks.map((link) => (
-                                <Link key={link.name} href={link.href} className="text-sm font-medium hover:text-sky-600 transition duration-300">
-                                    {link.name}
-                                </Link>
-                            ))}
+                    <div className="flex justify-between items-center relative">
+                        
+                        {/* Menu Mobile & Liens Gauche */}
+                        <div className="flex-1 flex items-center justify-start">
+                            <button 
+                                className="md:hidden text-charcoal hover:text-burgundy transition z-[60] relative p-1"
+                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                                aria-label="Toggle Menu"
+                            >
+                                {isMobileMenuOpen ? <X size={30} strokeWidth={1.2} /> : <Menu size={30} strokeWidth={1.2} />}
+                            </button>
+                            <div className="hidden md:flex space-x-8">
+                                {leftLinks.map((link) => (
+                                    <Link key={link.name} href={link.href} className="text-[11px] uppercase tracking-[0.15em] font-medium hover:text-burgundy transition duration-300 relative group">
+                                        {link.name}
+                                        <span className="absolute -bottom-1.5 left-1/2 transform -translate-x-1/2 w-0 h-[1px] bg-burgundy transition-all duration-300 group-hover:w-full"></span>
+                                    </Link>
+                                ))}
+                            </div>
                         </div>
 
-                        {/* Cart & Mobile Toggle */}
-                        <div className="flex items-center space-x-5">
-                            <Link href={route('cart')} className="text-stone-600 hover:text-sky-600 transition relative">
-    <ShoppingBag size={24} strokeWidth={1.5} />
-    {cartCount > 0 && (
-        <span className="absolute -top-1 -right-2 bg-sky-600 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
-            {cartCount}
-        </span>
-    )}
-</Link>
-                            <button 
-                                className="md:hidden text-stone-600 hover:text-sky-600 transition"
-                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            >
-                                {isMobileMenuOpen ? <X size={28} strokeWidth={1.5} /> : <Menu size={28} strokeWidth={1.5} />}
-                            </button>
+                        {/* Logo Centré */}
+                        
+                        <div className="flex-shrink-0 absolute left-1/2 transform -translate-x-1/2 z-[60]">
+                            <Link href={route('home')} className="block group" onClick={() => setIsMobileMenuOpen(false)}>
+                                <img 
+                                    src="/image/logo.png" 
+                                    alt="Vellure Logo" 
+                                    /* Changed h-10 md:h-14 to h-14 md:h-20 */
+                                    className="h-14 md:h-20 w-auto object-contain transition duration-300 group-hover:opacity-70"
+                                />
+                            </Link>
+                        </div>
+
+                        {/* Liens Droite & Panier */}
+                        <div className="flex-1 flex items-center justify-end space-x-8">
+                            <div className="hidden md:flex space-x-8">
+                                {rightLinks.map((link) => (
+                                    <Link key={link.name} href={link.href} className="text-[11px] uppercase tracking-[0.15em] font-medium hover:text-burgundy transition duration-300 relative group">
+                                        {link.name}
+                                        <span className="absolute -bottom-1.5 left-1/2 transform -translate-x-1/2 w-0 h-[1px] bg-burgundy transition-all duration-300 group-hover:w-full"></span>
+                                    </Link>
+                                ))}
+                            </div>
+                            <Link href={route('cart')} className="text-charcoal hover:text-burgundy transition relative z-[60]">
+                                <ShoppingBag size={24} strokeWidth={1.2} />
+                                {cartCount > 0 && (
+                                    <span className="absolute -top-1.5 -right-2 bg-burgundy text-cream text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-bold shadow-md">
+                                        {cartCount}
+                                    </span>
+                                )}
+                            </Link>
                         </div>
                     </div>
                 </div>
 
-                {/* Mobile Menu */}
+                {/* Menu Mobile Overlay */}
                 <AnimatePresence>
                     {isMobileMenuOpen && (
                         <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="md:hidden bg-white border-t border-stone-100"
+                            variants={menuVars}
+                            initial="initial"
+                            animate="animate"
+                            exit="exit"
+                            className="fixed inset-0 bg-cream z-50 flex flex-col justify-center items-center h-screen"
                         >
-                            <div className="flex flex-col px-6 py-6 space-y-5 shadow-inner">
-                                {navLinks.map((link) => (
-                                    <Link 
-                                        key={link.name} 
-                                        href={link.href} 
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                        className="text-lg font-medium text-stone-600 hover:text-sky-700 hover:pl-2 transition-all duration-300"
-                                    >
-                                        {link.name}
-                                    </Link>
+                            <div className="flex flex-col space-y-8 text-center mt-12">
+                                {navLinks.map((link, i) => (
+                                    <div key={link.name} className="overflow-hidden">
+                                        <motion.div variants={linkVars} custom={i} transition={{ delay: 0.1 * i }}>
+                                            <Link 
+                                                href={link.href} 
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                                className="font-dream text-4xl md:text-5xl text-charcoal hover:text-burgundy transition-colors duration-300 relative inline-block group"
+                                            >
+                                                {link.name}
+                                                <span className="absolute top-1/2 -left-8 w-4 h-[1px] bg-burgundy opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
+                                                <span className="absolute top-1/2 -right-8 w-4 h-[1px] bg-burgundy opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
+                                            </Link>
+                                        </motion.div>
+                                    </div>
                                 ))}
                             </div>
+                            
+                            {/* Footer du Menu Mobile */}
+                            <motion.div 
+                                initial={{ opacity: 0 }} 
+                                animate={{ opacity: 1 }} 
+                                transition={{ delay: 0.8 }}
+                                className="absolute bottom-10 flex flex-col items-center space-y-6"
+                            >
+                                <div className="flex space-x-6">
+                                    <a href="#" className="hover:scale-110 transition duration-300">
+                                        <img src="/image/insta-icon.png" alt="Instagram" className="w-6 h-6 object-contain" />
+                                    </a>
+                                    <a href="#" className="hover:scale-110 transition duration-300">
+                                        <img src="/image/fb-icon.png" alt="Facebook" className="w-6 h-6 object-contain" />
+                                    </a>
+                                </div>
+                                <p className="text-[10px] uppercase tracking-widest text-burgundy">L'élégance balnéaire</p>
+                            </motion.div>
                         </motion.div>
                     )}
                 </AnimatePresence>
             </nav>
 
-            {/* Contenu principal */}
-            <main className="flex-grow w-full">
+            {/* CORRECTION : pt-32 empêche le contenu de passer sous le menu transparent */}
+            <main className="flex-grow w-full pt-32">
                 {children}
             </main>
 
-            {/* Footer Professionnel */}
-            <footer className="bg-stone-900 text-stone-300 pt-16 pb-8 border-t-4 border-sky-800">
+            {/* Footer */}
+            {/* Footer */}
+            <footer className="bg-charcoal pt-24 pb-12 mt-12">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
-                        {/* Section Marque */}
-                        <div className="space-y-4">
-                            <h3 className="text-2xl font-serif text-white tracking-widest">
-                                MAILLOTS <span className="font-light">BURKINI</span>
-                            </h3>
-                            <p className="text-sm text-stone-400 leading-relaxed">
-                                L'alliance parfaite entre élégance, pudeur et confort. Découvrez notre gamme de maillots de bain conçue pour sublimer toutes les femmes, à la plage comme à la piscine.
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
+                        
+                        {/* Marque */}
+                         <div className="space-y-6">
+                            <Link href={route('home')} className="inline-block group">
+                                <img 
+                                    src="/image/logo.png" 
+                                    alt="Vellure Logo" 
+                                    /* Note: brightness-0 invert makes the black logo white so it's visible on the dark footer */
+                                    className="h-10 md:h-12 w-auto object-contain brightness-0 invert opacity-90 group-hover:opacity-100 transition duration-300"
+                                />
+                            </Link>
+                            <p className="text-sm leading-relaxed font-light text-cream opacity-60">
+                                L'alliance parfaite entre élégance balnéaire, pudeur et confort. Découvrez notre collection conçue pour sublimer la silhouette féminine.
                             </p>
+                            <div className="flex space-x-5 pt-4">
+                                {/* Using your original image icons */}
+                                <a href="#" className="hover:brightness-125 transition duration-300">
+                                    <img src="/image/insta-icon.jpg" alt="Instagram" className="w-5 h-5 object-contain brightness-0 invert opacity-80 hover:opacity-100" />
+                                </a>
+                                <a href="#" className="hover:brightness-125 transition duration-300">
+                                    <img src="/image/fb-icon.jpg" alt="Facebook" className="w-5 h-5 object-contain brightness-0 invert opacity-80 hover:opacity-100" />
+                                </a>
+                            </div>
                         </div>
 
-                        {/* Liens Rapides */}
+                        {/* Navigation */}
                         <div>
-                            <h4 className="text-white font-semibold mb-6 uppercase tracking-wider text-sm">Navigation</h4>
-                            <ul className="space-y-3 text-sm">
+                            <h4 className="text-cream text-[11px] font-bold uppercase tracking-[0.2em] mb-8">Boutique</h4>
+                            <ul className="space-y-4 text-sm font-light">
                                 {navLinks.slice(0, 5).map(link => (
                                     <li key={link.name}>
-                                        <Link href={link.href} className="hover:text-white hover:underline transition">{link.name}</Link>
+                                        {/* FIX: split text-cream and opacity */}
+                                        <Link href={link.href} className="text-cream opacity-70 hover:opacity-100 transition relative group inline-block">
+                                            {link.name}
+                                            <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-cream transition-all duration-300 group-hover:w-full"></span>
+                                        </Link>
                                     </li>
                                 ))}
                             </ul>
                         </div>
 
-                        {/* Service Client */}
+                        {/* Assistance */}
                         <div>
-                            <h4 className="text-white font-semibold mb-6 uppercase tracking-wider text-sm">Service Client</h4>
-                            <ul className="space-y-3 text-sm">
-                                <li><Link href={route('about')} className="hover:text-white hover:underline transition">Qui sommes-nous ?</Link></li>
-                                <li><a href="#" className="hover:text-white hover:underline transition">Livraison & Retours</a></li>
-                                <li><a href="#" className="hover:text-white hover:underline transition">Guide des Tailles</a></li>
-                                <li><a href="#" className="hover:text-white hover:underline transition">FAQ</a></li>
+                            <h4 className="text-cream text-[11px] font-bold uppercase tracking-[0.2em] mb-8">Assistance</h4>
+                            {/* FIX: split text-cream and opacity */}
+                            <ul className="space-y-4 text-sm font-light text-cream opacity-70">
+                                <li><Link href={route('about')} className="hover:opacity-100 transition">L'Histoire Vellure</Link></li>
+                                <li><a href="#" className="hover:opacity-100 transition">Livraison & Retours</a></li>
+                                <li><a href="#" className="hover:opacity-100 transition">Guide des Tailles</a></li>
+                                <li><a href="#" className="hover:opacity-100 transition">FAQ</a></li>
                             </ul>
                         </div>
 
-                        {/* Contact & Réseaux */}
+                        {/* Newsletter */}
                         <div>
-                            <h4 className="text-white font-semibold mb-6 uppercase tracking-wider text-sm">Contactez-nous</h4>
-                            <ul className="space-y-4 text-sm mb-6 text-stone-400">
-                                <li className="flex items-center space-x-3">
-                                    <Mail size={16} /> <span>contact@maillotsburkini.com</span>
-                                </li>
-                                <li className="flex items-center space-x-3">
-                                    <Phone size={16} /> <span>+33 1 23 45 67 89</span>
-                                </li>
-                                <li className="flex items-start space-x-3">
-                                    <MapPin size={16} className="mt-1 flex-shrink-0" /> 
-                                    <span>123 Avenue de la Plage<br/>75000 Paris, France</span>
-                                </li>
+                            <h4 className="text-cream text-[11px] font-bold uppercase tracking-[0.2em] mb-8">Le Cercle Vellure</h4>
+                            {/* FIX: split text-cream and opacity */}
+                            <p className="text-sm font-light mb-6 text-cream opacity-60">Inscrivez-vous pour découvrir nos nouvelles collections en avant-première.</p>
+                            <div className="flex border-b border-cream border-opacity-30 pb-2 mb-8 focus-within:border-opacity-100 transition duration-300">
+                                <input type="email" placeholder="Votre e-mail" className="bg-transparent border-none outline-none w-full text-sm text-cream placeholder-cream placeholder-opacity-40" />
+                                <button className="text-cream uppercase text-[10px] font-bold tracking-widest hover:text-white transition">Rejoindre</button>
+                            </div>
+                            <ul className="space-y-3 text-sm font-light text-cream opacity-70">
+                                <li className="flex items-center space-x-3"><Mail size={16} className="text-cream" /> <span>contact@vellurestore.com</span></li>
+                                <li className="flex items-center space-x-3"><Phone size={16} className="text-cream" /> <span>+33 1 23 45 67 89</span></li>
                             </ul>
-                            {/* <div className="flex space-x-4">
-                                <a href="#" className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center hover:bg-sky-700 hover:text-white transition duration-300">
-                                    <Instagram size={18} />
-                                </a>
-                                <a href="#" className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center hover:bg-sky-700 hover:text-white transition duration-300">
-                                    <Facebook size={18} />
-                                </a>
-                            </div> */}
                         </div>
                     </div>
 
-                    <div className="border-t border-stone-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-stone-500">
-                        <p>&copy; {new Date().getFullYear()} Maillots Burkini. Tous droits réservés.</p>
-                        <div className="flex space-x-4 mt-4 md:mt-0">
-                            <a href="#" className="hover:text-stone-300">Mentions Légales</a>
-                            <a href="#" className="hover:text-stone-300">Politique de Confidentialité</a>
+                    <div className="border-t border-cream border-opacity-10 pt-8 flex flex-col md:flex-row justify-between items-center text-[11px] uppercase tracking-widest font-light text-cream opacity-40">
+                        <p>&copy; {new Date().getFullYear()} VELLURE Store. Tous droits réservés.</p>
+                        <div className="flex space-x-8 mt-6 md:mt-0">
+                            <a href="#" className="hover:opacity-100 transition">Mentions Légales</a>
+                            <a href="#" className="hover:opacity-100 transition">Confidentialité</a>
                         </div>
                     </div>
                 </div>

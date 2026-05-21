@@ -26,7 +26,7 @@ export default function Cart({ cart }) {
                     <p className="text-2xl mb-4">🛒</p>
                     <p className="text-gray-600 mb-6">Votre panier est vide.</p>
                     <Link
-                        href="/products"
+                        href="/produits"
                         className="bg-gray-900 text-white px-6 py-3 rounded-xl font-semibold hover:bg-gray-700 transition"
                     >
                         Continuer mes achats
