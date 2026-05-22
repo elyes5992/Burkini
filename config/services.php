@@ -13,6 +13,10 @@ return [
     | a conventional file to locate the various service credentials.
     |
     */
+    'meta' => [
+    'pixel_id'     => env('META_PIXEL_ID'),
+    'access_token' => env('META_ACCESS_TOKEN'),
+],
 
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),

@@ -8,6 +8,13 @@ use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\MetaEventController;
+
+Route::prefix('meta')->group(function () {
+    Route::post('/page-view',   [MetaEventController::class, 'pageView']);
+    Route::post('/add-to-cart', [MetaEventController::class, 'addToCart']);
+    Route::post('/purchase',    [MetaEventController::class, 'purchase']);
+});
 
 
 Route::get('/dashboard', function () {
