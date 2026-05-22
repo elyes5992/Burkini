@@ -4,7 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 
 use Inertia\Inertia;
-use App\Http\Controllers\productController;
+use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
@@ -19,10 +19,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-Route::get('/', [productController::class, 'home'])->name('home');
-Route::get('/produits', [productController::class, 'products'])->name('products');
-Route::get('/a-propos', [productController::class, 'about'])->name('about');
-Route::get('/produit/{id}', [productController::class, 'show'])->name('product.show');
+Route::get('/', [ProductController::class, 'home'])->name('home');
+Route::get('/produits', [ProductController::class, 'Products'])->name('Products');
+Route::get('/a-propos', [ProductController::class, 'about'])->name('about');
+Route::get('/produit/{id}', [ProductController::class, 'show'])->name('Product.show');
 
 Route::get('/panier', [CartController::class, 'index'])->name('cart');
 Route::post('/panier/ajouter', [CartController::class, 'add'])->name('cart.add');

@@ -22,7 +22,7 @@ export default function Home() {
                     className="absolute inset-0 w-full h-full"
                 >
                     <img 
-                        src="/image/hero3.png" 
+                        src="/image/hero23.jpg" 
                         alt="Vellure Nouvelle Collection" 
                         className="w-full h-full object-cover object-top"
                     />
