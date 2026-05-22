@@ -4,8 +4,15 @@ import '../css/app.css';
 import { createRoot } from 'react-dom/client';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+import axios from 'axios';
 
-const appName = 'Bahar';
+const appName = 'Vellure';
+
+// Global function to send Meta events
+window.trackMetaEvent = (endpoint, data = {}) => {
+    axios.post(`/api/meta/${endpoint}`, data, { withCredentials: true })
+        .catch(err => console.error('Meta event error:', err));
+};
 
 createInertiaApp({
     title: (title) => `${title} — ${appName}`,
@@ -20,5 +27,9 @@ createInertiaApp({
     },
     progress: {
         color: '#C4956A',
+    },
+    // Track PageView on every page navigation
+    visited() {
+        window.trackMetaEvent('page-view');
     },
 });

@@ -12,8 +12,17 @@ export default function Cart({ cart }) {
     const remaining = FREE_DELIVERY_MIN - subtotal;
 
     function updateQty(key, quantity) {
-        router.patch(`/cart/${key}`, { quantity }, { preserveScroll: true });
+    const item = items.find(i => i.key === key);
+    // Only track if quantity is increasing (adding more)
+    if (item && quantity > item.quantity) {
+        window.trackMetaEvent('add-to-cart', {
+            product_id: item.product_id ?? key,
+            quantity: 1,
+            price: item.price,
+        });
     }
+    router.patch(`/cart/${key}`, { quantity }, { preserveScroll: true });
+}
 
     function remove(key) {
         router.delete(`/cart/${key}`, { preserveScroll: true });

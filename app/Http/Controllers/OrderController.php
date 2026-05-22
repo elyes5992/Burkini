@@ -80,14 +80,19 @@ class OrderController extends Controller
         session()->forget('cart');
 
         return Inertia::render('OrderConfirmation', [
-            'order' => [
-                'id'            => $order->id,
-                'customer_name' => $order->customer_name,
-                'subtotal'      => $subtotal,
-                'deliveryFee'   => $delivery,
-                'total_price'   => $order->total_price,
-                'status'        => $order->status,
-            ],
-        ]);
+    'order' => [
+        'id'            => $order->id,
+        'customer_name' => $order->customer_name,
+        'subtotal'      => $subtotal,
+        'deliveryFee'   => $delivery,
+        'total_price'   => $order->total_price,
+        'status'        => $order->status,
+        'items'         => $order->items->map(fn($item) => [
+            'product_id' => $item->product_id,
+            'quantity'   => $item->quantity,
+            'price'      => $item->product_price,
+        ])->values(),
+    ],
+]);
     }
 }

@@ -19,6 +19,7 @@ export default function Checkout({ cart, subtotal, deliveryFee, freeDeliveryMin,
         
         // Alternatively, you could do: post('/commander');
     }
+    
 
     return (
         <MainLayout>
