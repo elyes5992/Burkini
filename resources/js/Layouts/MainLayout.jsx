@@ -146,7 +146,7 @@ export default function MainLayout({ children }) {
                                 className="absolute bottom-10 flex flex-col items-center space-y-6"
                             >
                                 <div className="flex space-x-6">
-                                    <a href="#" className="hover:scale-110 transition duration-300">
+                                    <a href="https://www.facebook.com/?next_cuid=AYhudduFFpaQfcbwh_2U6ocNn2nkhDUqFz-DdRxhLaKIoSNxj9gnF1quIahcFtSCy_7qWSBjUb7s-083Yr9UImghLKl016Hrtw9cKe4KF48UTQ" className="hover:scale-110 transition duration-300">
                                         <img src="/image/insta-icon.png" alt="Instagram" className="w-6 h-6 object-contain" />
                                     </a>
                                     <a href="#" className="hover:scale-110 transition duration-300">

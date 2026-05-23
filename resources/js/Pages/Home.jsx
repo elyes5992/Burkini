@@ -37,7 +37,7 @@ export default function Home() {
                     className="relative z-10 text-center text-cream px-4 mt-16"
                 >
                     <span className="text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block text-cream/80">Nouvelle Collection</span>
-                    <h1 className="text-5xl md:text-8xl font-dream mb-6 drop-shadow-lg tracking-wide">VELLURE</h1>
+                    <h1 className="text-5xl md:text-8xl font-dream mb-6 drop-shadow-lg tracking-wide">Vellure</h1>
                     <p className="text-base md:text-xl font-light mb-10 max-w-lg mx-auto drop-shadow-md text-cream/90">
                         Sublimez votre été. Découvrez nos collections exclusives alliant pudeur, confort et élégance absolue.
                     </p>
@@ -50,41 +50,62 @@ export default function Home() {
                 </motion.div>
             </section>
 
-            {/* Categories Section */}
-            <section className="py-24 px-4 max-w-7xl mx-auto bg-cream">
+            {/* Categories Section - UPDATED WITH MOBILE SLIDER */}
+           <section className="py-24 px-4 max-w-7xl mx-auto bg-cream overflow-hidden">
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-100px" }}
-                    className="text-center mb-16"
+                    className="text-center mb-10 md:mb-16"
                 >
                     <span className="text-burgundy text-[10px] font-bold uppercase tracking-[0.3em]">Notre Univers</span>
                     <h2 className="text-4xl md:text-5xl font-dream text-charcoal mt-4 mb-6">Collections Vellure</h2>
                     <div className="w-16 h-[1px] bg-burgundy mx-auto"></div>
                 </motion.div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10">
+                {/* Container: Changed mobile gap to gap-5 for better breathing room */}
+                <div className="flex md:grid md:grid-cols-3 gap-5 md:gap-10 overflow-x-auto snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0 pb-8 md:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                     {[
-                        { title: 'Non Voilée', img: '/image/image2.png', cat: 'non voilée' },
-                        { title: 'Voilée', img: '/image/image3.png', cat: 'voilée' },
-                        { title: 'Enfant', img: '/image/image4.jpg', cat: 'enfant' }
+                        { title: 'Non Voilée', img: '/image/cat-nonv.png', cat: 'non voilée' },
+                        { title: 'Voilée', img: '/image/cat-v1.png', cat: 'voilée' },
+                        { title: 'Enfant', img: '/image/cat-e.jpg', cat: 'enfant' }
                     ].map((item, index) => (
-                        <Link href={route('products', { category: item.cat })} key={index}>
+                        <Link 
+                            href={route('products', { category: item.cat })} 
+                            key={index}
+                            // CHANGED: w-[72vw] makes it narrower, revealing more of the next card to encourage swiping
+                            className="relative block w-[72vw] md:w-auto flex-shrink-0 snap-center group cursor-pointer"
+                        >
                             <motion.div 
                                 initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: index * 0.2, duration: 0.7 }}
-                                className="relative h-[28rem] overflow-hidden group cursor-pointer"
+                                // CHANGED: h-[34rem] on mobile, h-[38rem] on desktop for elegant tall portrait aspect ratio
+                                className="relative h-[42rem] md:h-[38rem] overflow-hidden rounded-2xl md:rounded-none shadow-lg md:shadow-none"
                             >
-                                <img src={item.img} alt={item.title} className="w-full h-full object-cover transition duration-1000 group-hover:scale-105" />
-                                <div className="absolute inset-0 bg-charcoal/20 group-hover:bg-charcoal/40 transition duration-500 flex items-end justify-center pb-12">
-                                    <div className="text-center">
-                                        <h3 className="text-cream text-3xl font-dream mb-3 tracking-wide">{item.title}</h3>
-                                        <span className="text-cream/80 text-[10px] uppercase tracking-[0.2em] relative inline-block group-hover:text-cream transition">
+                                {/* Image */}
+                                <img src={item.img} alt={item.title} className="w-full h-full object-cover transition duration-1000 md:group-hover:scale-110" />
+                                
+                                {/* Burgundy Gradient Overlay - Adjusted slightly for the taller height */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#7e0220]/95 via-[#7e0220]/30 to-transparent opacity-100 md:opacity-80 md:group-hover:opacity-100 transition-opacity duration-500"></div>
+                                
+                                {/* Content Container */}
+                                <div className="absolute inset-0 flex items-end justify-center pb-12 z-10">
+                                    <div className="text-center transform translate-y-0 md:translate-y-4 md:group-hover:translate-y-0 transition-transform duration-500 ease-out">
+                                        
+                                        {/* Cream Text */}
+                                        <h3 className="text-[#f4e8ce] text-3xl font-dream mb-2 tracking-wide drop-shadow-md">
+                                            {item.title}
+                                        </h3>
+                                        
+                                        {/* Explorer link */}
+                                        <span className="text-[#f4e8ce] md:text-[#f4e8ce]/80 text-[10px] uppercase tracking-[0.25em] relative inline-block md:group-hover:text-[#f4e8ce] transition-all duration-300 opacity-100 md:opacity-0 md:group-hover:opacity-100 mt-1">
                                             Explorer
-                                            <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-[1px] bg-cream transition-all duration-300 group-hover:w-full"></span>
+                                            {/* Underline */}
+                                            <span className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-full md:w-0 h-[1px] bg-[#f4e8ce] transition-all duration-500 delay-100 md:group-hover:w-full"></span>
                                         </span>
+
                                     </div>
                                 </div>
                             </motion.div>
@@ -160,7 +181,7 @@ export default function Home() {
                         className="w-full lg:w-1/2 relative"
                     >
                         <div className="relative aspect-[4/5] md:aspect-[3/4] overflow-hidden">
-                            <img src="/image/image4.jpg" alt="L'Exigence Vellure" className="w-full h-full object-cover" />
+                            <img src="/image/texture.png" alt="L'Exigence Vellure" className="w-full h-full object-cover" />
                             <div className="absolute inset-0 border border-burgundy/20 m-6"></div>
                         </div>
                     </motion.div>
