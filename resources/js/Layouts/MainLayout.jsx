@@ -234,7 +234,7 @@ export default function MainLayout({ children }) {
                             </div>
                             <ul className="space-y-3 text-sm font-light text-cream opacity-70">
                                 <li className="flex items-center space-x-3"><Mail size={16} className="text-cream" /> <span>contact@vellurestore.com</span></li>
-                                <li className="flex items-center space-x-3"><Phone size={16} className="text-cream" /> <span>+33 1 23 45 67 89</span></li>
+                                <li className="flex items-center space-x-3"><Phone size={16} className="text-cream" /> <span>+216 95 940 668</span></li>
                             </ul>
                         </div>
                     </div>
