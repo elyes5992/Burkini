@@ -39,8 +39,19 @@ Route::delete('/panier', [CartController::class, 'clear'])->name('cart.clear');
 
 Route::get('/panier/json', [CartController::class, 'json'])->name('cart.json');
 
+Route::get('/livraison-et-retours', function () {
+    return Inertia::render('LivraisonRetours');
+})->name('livraison');
+
+Route::get('/guide-des-tailles', function () {
+    return Inertia::render('GuideTailles');
+})->name('guide-tailles');
+
+
+
+
 // Checkout
 Route::get('/commander', [OrderController::class, 'checkout'])->name('checkout');
 Route::post('/commander', [OrderController::class, 'store'])->name('order.store');
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

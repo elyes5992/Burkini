@@ -214,12 +214,12 @@ export default function MainLayout({ children }) {
                         {/* Assistance */}
                         <div>
                             <h4 className="text-cream text-[11px] font-bold uppercase tracking-[0.2em] mb-8">Assistance</h4>
-                            {/* FIX: split text-cream and opacity */}
                             <ul className="space-y-4 text-sm font-light text-cream opacity-70">
                                 <li><Link href={route('about')} className="hover:opacity-100 transition">L'Histoire Vellure</Link></li>
-                                <li><a href="#" className="hover:opacity-100 transition">Livraison & Retours</a></li>
-                                <li><a href="#" className="hover:opacity-100 transition">Guide des Tailles</a></li>
-                                <li><a href="#" className="hover:opacity-100 transition">FAQ</a></li>
+                                {/* UPDATED LINKS HERE */}
+                                <li><Link href={route('livraison')} className="hover:opacity-100 transition">Livraison & Retours</Link></li>
+                                <li><Link href={route('guide-tailles')} className="hover:opacity-100 transition">Guide des Tailles</Link></li>
+                                
                             </ul>
                         </div>
 

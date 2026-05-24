@@ -82,7 +82,7 @@ export default function Home() {
                                 viewport={{ once: true }}
                                 transition={{ delay: index * 0.2, duration: 0.7 }}
                                 // CHANGED: h-[34rem] on mobile, h-[38rem] on desktop for elegant tall portrait aspect ratio
-                                className="relative h-[42rem] md:h-[38rem] overflow-hidden rounded-2xl md:rounded-none shadow-lg md:shadow-none"
+                                className="relative h-[34rem] md:h-[38rem] overflow-hidden rounded-2xl md:rounded-none shadow-lg md:shadow-none"
                             >
                                 {/* Image */}
                                 <img src={item.img} alt={item.title} className="w-full h-full object-cover transition duration-1000 md:group-hover:scale-110" />

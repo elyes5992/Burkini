@@ -27,7 +27,7 @@ class ProductForm
                     ->required()
                     ->maxLength(255)
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn ($state, callable $set) => $set('slug', Str::slug($state))),
+                    ->afterStateUpdated(fn($state, callable $set) => $set('slug', Str::slug($state))),
 
                 TextInput::make('slug')
                     ->required()
@@ -57,7 +57,7 @@ class ProductForm
                     ->step(0.01)
                     ->nullable()
                     ->helperText('Remplissez uniquement pour les promos. Laissez vide sinon.')
-                    ->visible(fn ($get) => $get('tag') === 'promo'),
+                    ->visible(fn($get) => $get('tag') === 'promo'),
 
                 // ── Tag badge ─────────────────────────────────────────────
                 Select::make('tag')
@@ -89,8 +89,10 @@ class ProductForm
                             ->image()
                             ->directory('products')
                             ->required()
-                            ->maxSize(2048)
+                            ->maxSize(10240)
                             ->imageEditor()
+                            ->optimize('webp') // Converts to WebP automatically
+                            ->resize(1920, 1080) // Prevents ultra-massive resolutions
                             ->columnSpanFull(),
 
                         TextInput::make('sort_order')
@@ -103,7 +105,7 @@ class ProductForm
                     ->defaultItems(1)
                     ->reorderable()
                     ->collapsible()
-                    ->itemLabel(fn (array $state): ?string => $state['sort_order'] === 0 ? 'Main Image' : 'Image ' . ($state['sort_order'] ?? 'New'))
+                    ->itemLabel(fn(array $state): ?string => $state['sort_order'] === 0 ? 'Main Image' : 'Image ' . ($state['sort_order'] ?? 'New'))
                     ->addActionLabel('Add Image'),
             ]);
     }
