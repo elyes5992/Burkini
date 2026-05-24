@@ -7,6 +7,8 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 
 use Filament\Tables\Columns\SelectColumn;
 use Filament\Actions\Action;
@@ -43,6 +45,61 @@ class OrdersTable
                         $html .= '</div>';
                         return $html;
                     }),
+
+                // Aperçu button as its own column right after products
+                TextColumn::make('apercu')
+                    ->label('')
+                    ->html()
+                    ->getStateUsing(fn ($record) => '
+                        <span style="
+                            display:inline-flex;
+                            align-items:center;
+                            gap:4px;
+                            background:#0ea5e9;
+                            color:white;
+                            font-size:11px;
+                            font-weight:600;
+                            padding:4px 10px;
+                            border-radius:6px;
+                            cursor:pointer;
+                            white-space:nowrap;
+                        ">
+                            🖼 Aperçu
+                        </span>
+                    ')
+                    ->action(
+                        Action::make('preview_col')
+                            ->modalHeading(fn ($record) => 'Commande #' . $record->id . ' — ' . $record->customer_name)
+                            ->modalContent(function ($record) {
+                                $record->loadMissing('items');
+                                $html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:16px;padding:8px;">';
+                                foreach ($record->items as $item) {
+                                    $imgUrl = $item->product_image ?? null;
+                                    $img = $imgUrl
+                                        ? '<img src="' . e($imgUrl) . '" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px;margin-bottom:8px;">'
+                                        : '<div style="width:100%;aspect-ratio:3/4;background:#374151;border-radius:10px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;color:#6b7280;font-size:12px;">Pas d\'image</div>';
+                                    $html .= '
+                                        <div style="background:#1f2937;border-radius:12px;padding:10px;text-align:center;">
+                                            ' . $img . '
+                                            <div style="font-size:13px;font-weight:600;color:#f9fafb;margin-bottom:4px;">' . e($item->product_name) . '</div>
+                                            <div style="font-size:11px;color:#9ca3af;margin-bottom:4px;">Taille: ' . e($item->size) . '</div>
+                                            <div style="font-size:11px;color:#9ca3af;margin-bottom:6px;">Qté: ' . $item->quantity . '</div>
+                                            <div style="font-size:14px;font-weight:700;color:#38bdf8;">' . number_format($item->product_price, 2) . ' DT</div>
+                                        </div>';
+                                }
+                                $html .= '</div>';
+                                $html .= '
+                                    <div style="margin-top:16px;padding:12px 8px;border-top:1px solid #374151;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;font-size:13px;color:#9ca3af;">
+                                        <span>📞 ' . e($record->customer_phone) . '</span>
+                                        <span>📍 ' . e($record->customer_city) . ' — ' . e($record->customer_address) . '</span>
+                                        <span style="color:#34d399;font-weight:700;">Total: ' . number_format($record->total_price, 2) . ' DT</span>
+                                    </div>';
+                                return new \Illuminate\Support\HtmlString($html);
+                            })
+                            ->modalSubmitAction(false)
+                            ->modalCancelActionLabel('Fermer')
+                            ->slideOver()
+                    ),
 
                 TextColumn::make('customer_name')
                     ->label('Client')
@@ -103,48 +160,14 @@ class OrdersTable
                     ]),
             ])
             ->actions([
-                // Image preview modal
-                Action::make('preview')
-                    ->label('Aperçu')
-                    ->icon('heroicon-o-photo')
-                    ->color('info')
-                    ->modalHeading(fn ($record) => 'Commande #' . $record->id . ' — ' . $record->customer_name)
-                    ->modalContent(function ($record) {
-                        $record->loadMissing('items');
-                        $html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:16px;padding:8px;">';
-                        foreach ($record->items as $item) {
-                            $imgUrl = $item->product_image ?? null;
-                            $img = $imgUrl
-                                ? '<img src="' . e($imgUrl) . '" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px;margin-bottom:8px;">'
-                                : '<div style="width:100%;aspect-ratio:3/4;background:#374151;border-radius:10px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;color:#6b7280;font-size:12px;">Pas d\'image</div>';
-                            $html .= '
-                                <div style="background:#1f2937;border-radius:12px;padding:10px;text-align:center;">
-                                    ' . $img . '
-                                    <div style="font-size:13px;font-weight:600;color:#f9fafb;margin-bottom:4px;">' . e($item->product_name) . '</div>
-                                    <div style="font-size:11px;color:#9ca3af;margin-bottom:4px;">Taille: ' . e($item->size) . '</div>
-                                    <div style="font-size:11px;color:#9ca3af;margin-bottom:6px;">Qté: ' . $item->quantity . '</div>
-                                    <div style="font-size:14px;font-weight:700;color:#38bdf8;">' . number_format($item->product_price, 2) . ' DT</div>
-                                </div>';
-                        }
-                        $html .= '</div>';
-
-                        // Order summary footer
-                        $html .= '
-                            <div style="margin-top:16px;padding:12px 8px;border-top:1px solid #374151;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;font-size:13px;color:#9ca3af;">
-                                <span>📞 ' . e($record->customer_phone) . '</span>
-                                <span>📍 ' . e($record->customer_city) . ' — ' . e($record->customer_address) . '</span>
-                                <span style="color:#34d399;font-weight:700;">Total: ' . number_format($record->total_price, 2) . ' DT</span>
-                            </div>';
-
-                        return new \Illuminate\Support\HtmlString($html);
-                    })
-                    ->modalSubmitAction(false)
-                    ->modalCancelActionLabel('Fermer')
-                    ->slideOver(), // slides in from the right — great on mobile
-
                 EditAction::make()
                     ->label('Modifier')
                     ->icon('heroicon-o-pencil-square'),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
             ])
             ->defaultSort('created_at', 'desc')
             ->striped()
