@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Link } from '@inertiajs/react';
 import { Sun, Droplet, ShieldCheck } from 'lucide-react';
 
-export default function Home() {
+export default function Home({ trendingProducts = [] }) {
    
 
     return (
@@ -17,7 +17,7 @@ export default function Home() {
                     className="absolute inset-0 w-full h-full"
                 >
                     <img 
-                        src="/image/hero23.jpg" 
+                        src="/image/hero25.jpg" 
                         alt="Vellure Nouvelle Collection" 
                         className="w-full h-full object-cover object-top"
                     />
