@@ -153,7 +153,7 @@ export default function Home({ trendingProducts = [] }) {
                                     )}
 
                                     <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out hidden md:block">
-                                        <Link href={route('products.show', product.id)} className="block bg-cream/95 text-burgundy w-full py-3 text-[10px] uppercase font-bold tracking-[0.1em] hover:bg-burgundy hover:text-cream transition-colors duration-300">
+                                        <Link href={route('product.show', product.id)} className="block bg-cream/95 text-burgundy w-full py-3 text-[10px] uppercase font-bold tracking-[0.1em] hover:bg-burgundy hover:text-cream transition-colors duration-300">
                                             Aperçu Rapide
                                         </Link>
                                     </div>
