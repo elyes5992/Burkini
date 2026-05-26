@@ -8,9 +8,19 @@ use App\Models\Product;
 
 class ProductController extends Controller
 {
-    public function home()
+     public function home()
     {
-        return Inertia::render('Home');
+        // Récupère les produits qui ont "front_page" activé (limité à 4 pour le design)
+        $trendingProducts = Product::with(['images', 'category'])
+            ->where('is_active', true)
+            ->where('front_page', true)
+            ->take(4)
+            ->get()
+            ->map(fn ($p) => $this->formatProduct($p));
+
+        return Inertia::render('Home', [
+            'trendingProducts' => $trendingProducts
+        ]);
     }
 
     public function products(Request $request)

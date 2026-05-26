@@ -76,6 +76,10 @@ class ProductForm
                 Toggle::make('is_active')
                     ->default(true),
 
+                Toggle::make('front_page')
+                    ->label('Afficher sur la page d\'accueil (Pièces Maîtresses)')
+                    ->default(false),
+
                 Select::make('sizes')
                     ->relationship('sizes', 'name')
                     ->multiple()

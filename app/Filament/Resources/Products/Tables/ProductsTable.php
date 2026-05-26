@@ -37,21 +37,22 @@ class ProductsTable
                     ->label('Prix')
                     ->money('TND')
                     ->sortable()
-                    ->description(fn ($record) => $record->original_price
-                        ? 'Barré: ' . number_format($record->original_price, 2) . ' DT'
-                        : null
+                    ->description(
+                        fn($record) => $record->original_price
+                            ? 'Barré: ' . number_format($record->original_price, 2) . ' DT'
+                            : null
                     ),
 
                 TextColumn::make('tag')
                     ->label('Badge')
                     ->badge()
-                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                    ->formatStateUsing(fn(?string $state): string => match ($state) {
                         'promo'      => '🔥 Promo',
                         'bestseller' => '⭐ Best Seller',
                         'nouveaute'  => '🆕 Nouveauté',
                         default      => '—',
                     })
-                    ->color(fn (?string $state): string => match ($state) {
+                    ->color(fn(?string $state): string => match ($state) {
                         'promo'      => 'danger',
                         'bestseller' => 'warning',
                         'nouveaute'  => 'success',
@@ -59,6 +60,10 @@ class ProductsTable
                     }),
 
                 IconColumn::make('is_active')
+                    ->boolean()
+                    ->sortable(),
+                IconColumn::make('front_page')
+                    ->label('Page d\'accueil')
                     ->boolean()
                     ->sortable(),
 

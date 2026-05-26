@@ -4,12 +4,7 @@ import { Link } from '@inertiajs/react';
 import { Sun, Droplet, ShieldCheck } from 'lucide-react';
 
 export default function Home() {
-    const trendingProducts = [
-        { id: 1, name: "Ensemble Dalia Noir", price: "79.99", img: "/image/image1.png", category: "voilée" },
-        { id: 2, name: "Maillot Azure Une Pièce", price: "45.00", img: "/image/image4.jpg", category: "non voilée" },
-        { id: 3, name: "Burkini Floral Premium", price: "89.00", img: "/image/image2.png", category: "voilée" },
-        { id: 4, name: "Ensemble Enfant Sirène", price: "35.00", img: "/image/image3.png", category: "enfant" },
-    ];
+   
 
     return (
         <MainLayout>
@@ -114,7 +109,7 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Trending Products Section */}
+           {/* Trending Products Section */}
             <section className="py-24 bg-white">
                 <div className="max-w-7xl mx-auto px-4">
                     <motion.div 
@@ -134,7 +129,8 @@ export default function Home() {
                     </motion.div>
 
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
-                        {trendingProducts.map((product, index) => (
+                        {/* ICI NOUS UTILISONS LES DONNEES DE LA BASE DE DONNEES */}
+                        {trendingProducts.length > 0 ? trendingProducts.map((product, index) => (
                             <motion.div 
                                 key={product.id}
                                 initial={{ opacity: 0, y: 30 }}
@@ -144,21 +140,33 @@ export default function Home() {
                                 className="group cursor-pointer text-center"
                             >
                                 <div className="relative aspect-[3/4] overflow-hidden mb-6 bg-cream/30">
-                                    <img src={product.img} alt={product.name} className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-700" />
-                                    {index === 0 && (
-                                        <div className="absolute top-4 left-4 bg-burgundy text-cream text-[9px] uppercase tracking-widest font-bold px-4 py-1">Exclusivité</div>
+                                    {/* CHANGEMENT DE product.img à product.image */}
+                                    <Link href={route('products.show', product.id)}>
+                                        <img src={product.image} alt={product.name} className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-700" />
+                                    </Link>
+                                    
+                                    {/* Exclusivité / Promo Tag dynamique depuis la BDD (Optionnel) */}
+                                    {product.tag && (
+                                        <div className="absolute top-4 left-4 bg-burgundy text-cream text-[9px] uppercase tracking-widest font-bold px-4 py-1">
+                                            {product.tag === 'nouveaute' ? 'Nouveauté' : product.tag === 'bestseller' ? 'Exclusivité' : product.tag}
+                                        </div>
                                     )}
+
                                     <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out hidden md:block">
-                                        <button className="bg-cream/95 text-burgundy w-full py-3 text-[10px] uppercase font-bold tracking-[0.1em] hover:bg-burgundy hover:text-cream transition-colors duration-300">
+                                        <Link href={route('products.show', product.id)} className="block bg-cream/95 text-burgundy w-full py-3 text-[10px] uppercase font-bold tracking-[0.1em] hover:bg-burgundy hover:text-cream transition-colors duration-300">
                                             Aperçu Rapide
-                                        </button>
+                                        </Link>
                                     </div>
                                 </div>
                                 <p className="text-charcoal/50 text-[10px] uppercase tracking-widest mb-2">{product.category}</p>
                                 <h3 className="text-sm font-medium text-charcoal mb-2 font-serif">{product.name}</h3>
                                 <p className="text-burgundy text-sm">{product.price} €</p>
                             </motion.div>
-                        ))}
+                        )) : (
+                            <div className="col-span-full text-center text-charcoal/50 py-10">
+                                Aucun produit épinglé pour le moment.
+                            </div>
+                        )}
                     </div>
                     
                     <div className="mt-16 text-center md:hidden">

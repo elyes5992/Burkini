@@ -8,13 +8,14 @@ class Product extends Model
 {
     protected $fillable = [
         'category_id', 'name', 'slug', 'description',
-        'price', 'original_price', 'tag', 'is_active',
+        'price', 'original_price', 'tag', 'is_active', 'front_page'
     ];
 
     protected $casts = [
         'price'          => 'float',
         'original_price' => 'float',
         'is_active'      => 'boolean',
+        'front_page'      => 'boolean',
     ];
 
     public function category()
