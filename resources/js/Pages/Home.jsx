@@ -141,7 +141,7 @@ export default function Home({ trendingProducts = [] }) {
                             >
                                 <div className="relative aspect-[3/4] overflow-hidden mb-6 bg-cream/30">
                                     {/* CHANGEMENT DE product.img à product.image */}
-                                    <Link href={route('products.show', product.id)}>
+                                    <Link href={route('product.show', product.id)}>
                                         <img src={product.image} alt={product.name} className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-700" />
                                     </Link>
                                     
