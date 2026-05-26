@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Menu, X, ShoppingBag, Mail, Phone } from 'lucide-react';
+import { FaInstagram, FaFacebookF } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, usePage } from '@inertiajs/react';
 
@@ -33,7 +34,7 @@ export default function MainLayout({ children }) {
 
     const leftLinks = navLinks.slice(0, 3);
     const rightLinks = navLinks.slice(3, 6);
-    
+
     // Fallback si cartCount n'est pas défini
     const { cartCount = 0 } = usePage().props || {};
 
@@ -42,7 +43,7 @@ export default function MainLayout({ children }) {
         animate: { opacity: 1, clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)", transition: { duration: 0.6, ease: [0.33, 1, 0.68, 1] } },
         exit: { opacity: 0, clipPath: "polygon(0 0, 100% 0, 100% 0, 0 0)", transition: { duration: 0.5, ease: [0.11, 0, 0.5, 0] } }
     };
-    
+
     // CORRECTION : L'animation du texte cherchait 'open' au lieu de 'animate'
     const linkVars = {
         initial: { y: 30, opacity: 0 },
@@ -55,10 +56,10 @@ export default function MainLayout({ children }) {
             <nav className={`fixed w-full top-0 z-50 transition-all duration-700 ${scrolled ? 'bg-cream/95 backdrop-blur-md py-4 shadow-sm' : 'bg-transparent py-6'}`}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center relative">
-                        
+
                         {/* Menu Mobile & Liens Gauche */}
                         <div className="flex-1 flex items-center justify-start">
-                            <button 
+                            <button
                                 className="md:hidden text-charcoal hover:text-burgundy transition z-[60] relative p-1"
                                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                                 aria-label="Toggle Menu"
@@ -76,12 +77,12 @@ export default function MainLayout({ children }) {
                         </div>
 
                         {/* Logo Centré */}
-                        
+
                         <div className="flex-shrink-0 absolute left-1/2 transform -translate-x-1/2 z-[60]">
                             <Link href={route('home')} className="block group" onClick={() => setIsMobileMenuOpen(false)}>
-                                <img 
-                                    src="/image/logo.png" 
-                                    alt="Vellure Logo" 
+                                <img
+                                    src="/image/logo.png"
+                                    alt="Vellure Logo"
                                     /* Changed h-10 md:h-14 to h-14 md:h-20 */
                                     className="h-14 md:h-20 w-auto object-contain transition duration-300 group-hover:opacity-70"
                                 />
@@ -124,8 +125,8 @@ export default function MainLayout({ children }) {
                                 {navLinks.map((link, i) => (
                                     <div key={link.name} className="overflow-hidden">
                                         <motion.div variants={linkVars} custom={i} transition={{ delay: 0.1 * i }}>
-                                            <Link 
-                                                href={link.href} 
+                                            <Link
+                                                href={link.href}
                                                 onClick={() => setIsMobileMenuOpen(false)}
                                                 className="font-dream text-4xl md:text-5xl text-charcoal hover:text-burgundy transition-colors duration-300 relative inline-block group"
                                             >
@@ -137,22 +138,22 @@ export default function MainLayout({ children }) {
                                     </div>
                                 ))}
                             </div>
-                            
+
                             {/* Footer du Menu Mobile */}
-                            <motion.div 
-                                initial={{ opacity: 0 }} 
-                                animate={{ opacity: 1 }} 
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
                                 transition={{ delay: 0.8 }}
                                 className="absolute bottom-10 flex flex-col items-center space-y-6"
                             >
-                                <div className="flex space-x-6">
-                                    <a href="https://www.facebook.com/?next_cuid=AYhudduFFpaQfcbwh_2U6ocNn2nkhDUqFz-DdRxhLaKIoSNxj9gnF1quIahcFtSCy_7qWSBjUb7s-083Yr9UImghLKl016Hrtw9cKe4KF48UTQ" className="hover:scale-110 transition duration-300">
-                                        <img src="/image/insta-icon.png" alt="Instagram" className="w-6 h-6 object-contain" />
-                                    </a>
-                                    <a href="#" className="hover:scale-110 transition duration-300">
-                                        <img src="/image/fb-icon.png" alt="Facebook" className="w-6 h-6 object-contain" />
-                                    </a>
-                                </div>
+                               <div className="flex space-x-6 text-charcoal">
+    <a href="https://www.facebook.com/?..." className="hover:text-burgundy hover:scale-110 transition duration-300">
+        <FaInstagram size={24} />
+    </a>
+    <a href="#" className="hover:text-burgundy hover:scale-110 transition duration-300">
+        <FaFacebookF size={22} />
+    </a>
+</div>
                                 <p className="text-[10px] uppercase tracking-widest text-burgundy">L'élégance balnéaire</p>
                             </motion.div>
                         </motion.div>
@@ -170,13 +171,13 @@ export default function MainLayout({ children }) {
             <footer className="bg-charcoal pt-24 pb-12 mt-12">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
-                        
+
                         {/* Marque */}
-                         <div className="space-y-6">
+                        <div className="space-y-6">
                             <Link href={route('home')} className="inline-block group">
-                                <img 
-                                    src="/image/logo.png" 
-                                    alt="Vellure Logo" 
+                                <img
+                                    src="/image/logo.png"
+                                    alt="Vellure Logo"
                                     /* Note: brightness-0 invert makes the black logo white so it's visible on the dark footer */
                                     className="h-10 md:h-12 w-auto object-contain brightness-0 invert opacity-90 group-hover:opacity-100 transition duration-300"
                                 />
@@ -185,12 +186,11 @@ export default function MainLayout({ children }) {
                                 L'alliance parfaite entre élégance balnéaire, pudeur et confort. Découvrez notre collection conçue pour sublimer la silhouette féminine.
                             </p>
                             <div className="flex space-x-5 pt-4">
-                                {/* Using your original image icons */}
-                                <a href="#" className="hover:brightness-125 transition duration-300">
-                                    <img src="/image/insta-icon.jpg" alt="Instagram" className="w-5 h-5 object-contain brightness-0 invert opacity-80 hover:opacity-100" />
+                                <a href="#" className="text-cream opacity-80 hover:opacity-100 hover:-translate-y-1 transition duration-300">
+                                    <FaInstagram size={20} />
                                 </a>
-                                <a href="#" className="hover:brightness-125 transition duration-300">
-                                    <img src="/image/fb-icon.jpg" alt="Facebook" className="w-5 h-5 object-contain brightness-0 invert opacity-80 hover:opacity-100" />
+                                <a href="#" className="text-cream opacity-80 hover:opacity-100 hover:-translate-y-1 transition duration-300">
+                                    <FaFacebookF size={18} />
                                 </a>
                             </div>
                         </div>
@@ -219,7 +219,7 @@ export default function MainLayout({ children }) {
                                 {/* UPDATED LINKS HERE */}
                                 <li><Link href={route('livraison')} className="hover:opacity-100 transition">Livraison & Retours</Link></li>
                                 <li><Link href={route('guide-tailles')} className="hover:opacity-100 transition">Guide des Tailles</Link></li>
-                                
+
                             </ul>
                         </div>
 
