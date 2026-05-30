@@ -30,7 +30,7 @@ const ProductBadge = ({ tag, discount }) => {
         }
     };
 
-    const config = badges[tag] || { bg: 'bg-stone-800 text-white', icon: <Tag size={14} className="mr-1.5"/>, text: tag };
+    const config = badges[tag] || { bg: 'bg-stone-800 text-white', icon: <Tag size={14} className="mr-1.5" />, text: tag };
 
     return (
         <motion.div
@@ -68,6 +68,13 @@ export default function ProductShow({ product, recommendations }) {
                 setToast(true);
                 setTimeout(() => setToast(false), 3000);
                 setCartOpen(true);
+
+                // ADD THIS:
+                window.trackMetaEvent('add_to_cart', {
+                    product_id: product.id,
+                    quantity: 1,
+                    price: parseFloat(product.price),
+                });
             },
             onFinish: () => setProcessing(false),
         });
@@ -263,7 +270,7 @@ export default function ProductShow({ product, recommendations }) {
                             <ProductBadge tag={product.tag} discount={product.discount_pct} />
 
                             <img src={mainImage} alt={product.name} className="w-full h-full object-cover object-top" />
-                            
+
                             <button
                                 onClick={() => setIsWishlisted(!isWishlisted)}
                                 className="absolute top-4 right-4 bg-white/90 p-3 rounded-full shadow-sm hover:scale-110 transition text-stone-400 z-10"
@@ -284,7 +291,7 @@ export default function ProductShow({ product, recommendations }) {
                                 <span className={`text-2xl font-bold ${product.original_price ? 'text-red-600' : 'text-stone-900'}`}>
                                     {parseFloat(product.price).toFixed(2)} DT
                                 </span>
-                                
+
                                 {product.original_price && (
                                     <span className="text-lg text-stone-400 line-through decoration-1">
                                         {parseFloat(product.original_price).toFixed(2)} DT
@@ -382,7 +389,7 @@ export default function ProductShow({ product, recommendations }) {
                                         <img src={rec.image} alt={rec.name} className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-500" />
                                     </div>
                                     <h3 className="text-sm md:text-base font-medium text-stone-800 truncate mb-1">{rec.name}</h3>
-                                    
+
                                     <div className="mt-auto flex flex-wrap items-center gap-2">
                                         <p className={`font-bold ${rec.original_price ? 'text-red-600' : 'text-sky-700'}`}>
                                             {parseFloat(rec.price).toFixed(2)} DT

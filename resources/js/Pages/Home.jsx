@@ -160,7 +160,7 @@ export default function Home({ trendingProducts = [] }) {
                                 </div>
                                 <p className="text-charcoal/50 text-[10px] uppercase tracking-widest mb-2">{product.category}</p>
                                 <h3 className="text-sm font-medium text-charcoal mb-2 font-serif">{product.name}</h3>
-                                <p className="text-burgundy text-sm">{product.price} €</p>
+                                <p className="text-burgundy text-sm">{product.price} DT</p>
                             </motion.div>
                         )) : (
                             <div className="col-span-full text-center text-charcoal/50 py-10">
