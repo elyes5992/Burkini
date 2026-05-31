@@ -8,7 +8,7 @@ use App\Models\Product;
 
 class ProductController extends Controller
 {
-     public function home()
+    public function home()
     {
         // Récupère les produits qui ont "front_page" activé (limité à 4 pour le design)
         $trendingProducts = Product::with(['images', 'category'])
@@ -17,7 +17,7 @@ class ProductController extends Controller
             ->orderBy('sort_order', 'asc')
             ->take(4)
             ->get()
-            ->map(fn ($p) => $this->formatProduct($p));
+            ->map(fn($p) => $this->formatProduct($p));
 
         return Inertia::render('Home', [
             'trendingProducts' => $trendingProducts
@@ -28,7 +28,8 @@ class ProductController extends Controller
     {
         $categoryName = $request->query('category', 'tous');
 
-        $query = Product::with(['category', 'images']);
+        $query = Product::with(['category', 'images'])
+            ->orderBy('sort_order', 'asc');
 
         if ($categoryName !== 'tous') {
             $query->whereHas('category', function ($q) use ($categoryName) {
@@ -36,7 +37,7 @@ class ProductController extends Controller
             });
         }
 
-        $products = $query->get()->map(fn ($p) => $this->formatProduct($p));
+        $products = $query->get()->map(fn($p) => $this->formatProduct($p));
 
         return Inertia::render('Products', [
             'products'        => $products,
@@ -56,7 +57,7 @@ class ProductController extends Controller
         $formattedProduct = [
             ...$this->formatProduct($product),
             'description' => $product->description,
-            'images'      => $product->images->map(fn ($img) => '/storage/' . $img->image_path)->toArray(),
+            'images'      => $product->images->map(fn($img) => '/storage/' . $img->image_path)->toArray(),
             'sizes'       => $product->sizes->pluck('name')->toArray(),
         ];
 
@@ -66,7 +67,7 @@ class ProductController extends Controller
             ->inRandomOrder()
             ->take(4)
             ->get()
-            ->map(fn ($rec) => $this->formatProduct($rec));
+            ->map(fn($rec) => $this->formatProduct($rec));
 
         return Inertia::render('ProductShow', [
             'product'         => $formattedProduct,
