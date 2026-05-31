@@ -14,6 +14,7 @@ class ProductController extends Controller
         $trendingProducts = Product::with(['images', 'category'])
             ->where('is_active', true)
             ->where('front_page', true)
+            ->orderBy('sort_order', 'asc')
             ->take(4)
             ->get()
             ->map(fn ($p) => $this->formatProduct($p));
