@@ -10,6 +10,7 @@ use FacebookAds\Object\ServerSide\Event;
 use FacebookAds\Object\ServerSide\EventRequest;
 use FacebookAds\Object\ServerSide\UserData;
 
+
 class MetaPixelService
 {
     protected string $pixelId;
@@ -37,19 +38,20 @@ class MetaPixelService
     }
 
     public function sendEvent(string $eventName, array $userData, CustomData $customData): void
-    {
-        $event = (new Event())
-            ->setEventName($eventName)
-            ->setEventTime(time())
-            ->setEventSourceUrl(request()->fullUrl())
-            ->setActionSource(ActionSource::WEBSITE)
-            ->setUserData($this->buildUserData($userData))
-            ->setCustomData($customData);
+{
+    $event = (new Event())
+        ->setEventName($eventName)
+        ->setEventTime(time())
+        ->setEventSourceUrl(request()->fullUrl())
+        ->setActionSource(ActionSource::WEBSITE)
+        ->setUserData($this->buildUserData($userData))
+        ->setCustomData($customData);
 
-        (new EventRequest($this->pixelId))
-            ->setEvents([$event])
-            ->execute();
-    }
+    (new EventRequest($this->pixelId))
+        ->setEvents([$event])
+        ->setTestEventCode('TEST53466')  // ← add here
+        ->execute();
+}
 
     public function trackPageView(array $userData): void
     {
