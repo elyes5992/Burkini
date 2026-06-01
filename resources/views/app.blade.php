@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,21 +20,29 @@
 
     <!-- Meta Pixel -->
     <script>
-        !function(f,b,e,v,n,t,s){
-            if(f.fbq)return;
-            n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-            if(!f._fbq)f._fbq=n;
-            n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];
-            t=b.createElement(e);t.async=!0;t.src=v;
-            s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)
-        }(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+        ! function(f, b, e, v, n, t, s) {
+            if (f.fbq) return;
+            n = f.fbq = function() {
+                n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+            };
+            if (!f._fbq) f._fbq = n;
+            n.push = n;
+            n.loaded = !0;
+            n.version = '2.0';
+            n.queue = [];
+            t = b.createElement(e);
+            t.async = !0;
+            t.src = v;
+            s = b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t, s)
+        }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
 
         fbq('init', '2452342321900510');
         fbq('track', 'PageView');
 
         window.trackMetaEvent = function(eventType, data) {
             // 1. Browser pixel (immediate)
-            if (eventType === 'add_to_cart') {
+            if (eventType === 'add-to-cart') { // ← was 'add_to_cart'
                 fbq('track', 'AddToCart', {
                     content_ids: [String(data.product_id)],
                     content_type: 'product',
@@ -51,8 +60,8 @@
 
             // 2. Server-side Conversions API
             const endpoints = {
-                add_to_cart: '/api/meta/add-to-cart',
-                purchase:    '/api/meta/purchase',
+                'add-to-cart': '/api/meta/add-to-cart', // ← was 'add_to_cart'
+                'purchase': '/api/meta/purchase',
             };
             const url = endpoints[eventType];
             if (!url) return;
@@ -77,4 +86,5 @@
 <body class="font-sans antialiased">
     @inertia
 </body>
+
 </html>

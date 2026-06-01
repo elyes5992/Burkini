@@ -8,11 +8,7 @@ import axios from 'axios';
 
 const appName = 'Vellure';
 
-// Global function to send Meta events
-window.trackMetaEvent = (endpoint, data = {}) => {
-    axios.post(`/api/meta/${endpoint}`, data, { withCredentials: true })
-        .catch(err => console.error('Meta event error:', err));
-};
+
 
 createInertiaApp({
     title: (title) => `${title} — ${appName}`,
