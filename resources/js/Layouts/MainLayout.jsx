@@ -146,14 +146,14 @@ export default function MainLayout({ children }) {
                                 transition={{ delay: 0.8 }}
                                 className="absolute bottom-10 flex flex-col items-center space-y-6"
                             >
-                               <div className="flex space-x-6 text-charcoal">
-    <a href="https://www.facebook.com/?..." className="hover:text-burgundy hover:scale-110 transition duration-300">
-        <FaInstagram size={24} />
-    </a>
-    <a href="#" className="hover:text-burgundy hover:scale-110 transition duration-300">
-        <FaFacebookF size={22} />
-    </a>
-</div>
+                                <div className="flex space-x-6 text-charcoal">
+                                    <a href="https://www.facebook.com/profile.php?id=100063644853182" className="hover:text-burgundy hover:scale-110 transition duration-300">
+                                        <FaInstagram size={24} />
+                                    </a>
+                                    <a href="https://www.facebook.com/profile.php?id=100063644853182" className="hover:text-burgundy hover:scale-110 transition duration-300">
+                                        <FaFacebookF size={22} />
+                                    </a>
+                                </div>
                                 <p className="text-[10px] uppercase tracking-widest text-burgundy">L'élégance balnéaire</p>
                             </motion.div>
                         </motion.div>
@@ -189,7 +189,7 @@ export default function MainLayout({ children }) {
                                 <a href="#" className="text-cream opacity-80 hover:opacity-100 hover:-translate-y-1 transition duration-300">
                                     <FaInstagram size={20} />
                                 </a>
-                                <a href="#" className="text-cream opacity-80 hover:opacity-100 hover:-translate-y-1 transition duration-300">
+                                <a href="https://www.facebook.com/profile.php?id=100063644853182" className="text-cream opacity-80 hover:opacity-100 hover:-translate-y-1 transition duration-300">
                                     <FaFacebookF size={18} />
                                 </a>
                             </div>
@@ -233,7 +233,7 @@ export default function MainLayout({ children }) {
                                 <button className="text-cream uppercase text-[10px] font-bold tracking-widest hover:text-white transition">Rejoindre</button>
                             </div>
                             <ul className="space-y-3 text-sm font-light text-cream opacity-70">
-                                <li className="flex items-center space-x-3"><Mail size={16} className="text-cream" /> <span>contact@vellu-restore.com</span></li>
+                                <li className="flex items-center space-x-3"><Mail size={16} className="text-cream" /> <span>contact@vellure-store.com</span></li>
                                 <li className="flex items-center space-x-3"><Phone size={16} className="text-cream" /> <span>+216 95 940 668</span></li>
                             </ul>
                         </div>

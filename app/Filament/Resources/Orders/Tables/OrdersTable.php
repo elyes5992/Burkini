@@ -50,7 +50,7 @@ class OrdersTable
                 TextColumn::make('apercu')
                     ->label('')
                     ->html()
-                    ->getStateUsing(fn ($record) => '
+                    ->getStateUsing(fn($record) => '
                         <span style="
                             display:inline-flex;
                             align-items:center;
@@ -69,7 +69,7 @@ class OrdersTable
                     ')
                     ->action(
                         Action::make('preview_col')
-                            ->modalHeading(fn ($record) => 'Commande #' . $record->id . ' — ' . $record->customer_name)
+                            ->modalHeading(fn($record) => 'Commande #' . $record->id . ' — ' . $record->customer_name)
                             ->modalContent(function ($record) {
                                 $record->loadMissing('items');
                                 $html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:16px;padding:8px;">';
@@ -120,7 +120,7 @@ class OrdersTable
                 TextColumn::make('customer_address')
                     ->label('Adresse')
                     ->limit(30)
-                    ->tooltip(fn ($record) => $record->customer_address)
+                    ->tooltip(fn($record) => $record->customer_address)
                     ->searchable(),
 
                 TextColumn::make('total_price')
@@ -133,8 +133,8 @@ class OrdersTable
                     ->label('Statut')
                     ->options([
                         'pending'   => '🕐 En attente',
-                        'confirmed' => '⚙️ En cours',
-                        'shipped'   => '🚚 Expédié',
+                        'confirmed' => '🔄 Confirmé',
+
                         'delivered' => '✅ Terminé',
                         'cancelled' => '❌ Annulé',
                     ])
@@ -146,7 +146,7 @@ class OrdersTable
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->since()
-                    ->tooltip(fn ($record) => $record->created_at->format('d/m/Y H:i')),
+                    ->tooltip(fn($record) => $record->created_at->format('d/m/Y H:i')),
             ])
             ->filters([
                 SelectFilter::make('status')
@@ -169,6 +169,13 @@ class OrdersTable
                     DeleteBulkAction::make(),
                 ]),
             ])
+            ->recordClasses(fn($record) => match ($record->status) {
+                'pending'   => 'bg-yellow-500/10 hover:bg-yellow-500/20 border-l-4 border-l-yellow-400',
+                'confirmed' => 'bg-blue-500/10 hover:bg-blue-500/20 border-l-4 border-l-blue-400',
+                'delivered' => 'bg-emerald-500/10 hover:bg-emerald-500/20 border-l-4 border-l-emerald-400',
+                'cancelled' => 'bg-red-500/10 hover:bg-red-500/20 border-l-4 border-l-red-400',
+                default     => '',
+            })
             ->defaultSort('created_at', 'desc')
             ->striped()
             ->paginated([10, 25, 50]);

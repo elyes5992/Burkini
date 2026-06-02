@@ -25,7 +25,7 @@ class Dashboard1 extends Dashboard
             'totalRevenue'    => $orders->whereIn('status', ['delivered', 'shipped'])->sum('total_price'),
             'pendingOrders'   => $orders->where('status', 'pending')->count(),
             'confirmedOrders' => $orders->where('status', 'confirmed')->count(),
-            'shippedOrders'   => $orders->where('status', 'shipped')->count(),
+           
             'deliveredOrders' => $orders->where('status', 'delivered')->count(),
             'cancelledOrders' => $orders->where('status', 'cancelled')->count(),
             'totalProducts'   => Product::count(),
