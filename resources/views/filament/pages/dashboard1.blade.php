@@ -31,12 +31,7 @@
             <div style="margin-top:8px;font-size:12px;color:#6b7280;">Confirmées</div>
         </div>
 
-        {{-- Expédié --}}
-        <div style="background:#1f2937;border-radius:12px;padding:20px;border-left:4px solid #818cf8;">
-            <div style="font-size:12px;color:#9ca3af;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;">Expédiées</div>
-            <div style="font-size:32px;font-weight:700;color:#818cf8;">{{ $shippedOrders }}</div>
-            <div style="margin-top:8px;font-size:12px;color:#6b7280;">En livraison</div>
-        </div>
+        
 
         {{-- Terminé --}}
         <div style="background:#1f2937;border-radius:12px;padding:20px;border-left:4px solid #34d399;">

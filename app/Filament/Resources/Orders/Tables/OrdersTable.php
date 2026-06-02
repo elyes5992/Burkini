@@ -169,13 +169,7 @@ class OrdersTable
                     DeleteBulkAction::make(),
                 ]),
             ])
-            ->recordClasses(fn($record) => match ($record->status) {
-                'pending'   => 'bg-yellow-500/10 hover:bg-yellow-500/20 border-l-4 border-l-yellow-400',
-                'confirmed' => 'bg-blue-500/10 hover:bg-blue-500/20 border-l-4 border-l-blue-400',
-                'delivered' => 'bg-emerald-500/10 hover:bg-emerald-500/20 border-l-4 border-l-emerald-400',
-                'cancelled' => 'bg-red-500/10 hover:bg-red-500/20 border-l-4 border-l-red-400',
-                default     => '',
-            })
+           
             ->defaultSort('created_at', 'desc')
             ->striped()
             ->paginated([10, 25, 50]);
