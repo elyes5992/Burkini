@@ -4,7 +4,7 @@ import { FaInstagram, FaFacebookF } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, usePage } from '@inertiajs/react';
 
-import WhatsAppButton from '@/Components/WhatsappButton';
+import WhatsAppButton from '@/Components/WhatsAppButton';
 
 export default function MainLayout({ children }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
