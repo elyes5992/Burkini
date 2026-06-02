@@ -4,6 +4,8 @@ import { FaInstagram, FaFacebookF } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, usePage } from '@inertiajs/react';
 
+import WhatsAppButton from '@/Components/WhatsappButton';
+
 export default function MainLayout({ children }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
@@ -147,7 +149,7 @@ export default function MainLayout({ children }) {
                                 className="absolute bottom-10 flex flex-col items-center space-y-6"
                             >
                                 <div className="flex space-x-6 text-charcoal">
-                                    <a href="https://www.facebook.com/profile.php?id=100063644853182" className="hover:text-burgundy hover:scale-110 transition duration-300">
+                                    <a href="https://www.instagram.com/boutheina_maillotdeplage?igsh=MXF4ZGVpMTQ5dm44dg==" className="hover:text-burgundy hover:scale-110 transition duration-300">
                                         <FaInstagram size={24} />
                                     </a>
                                     <a href="https://www.facebook.com/profile.php?id=100063644853182" className="hover:text-burgundy hover:scale-110 transition duration-300">
@@ -186,7 +188,7 @@ export default function MainLayout({ children }) {
                                 L'alliance parfaite entre élégance balnéaire, pudeur et confort. Découvrez notre collection conçue pour sublimer la silhouette féminine.
                             </p>
                             <div className="flex space-x-5 pt-4">
-                                <a href="#" className="text-cream opacity-80 hover:opacity-100 hover:-translate-y-1 transition duration-300">
+                                <a href="https://www.instagram.com/boutheina_maillotdeplage?igsh=MXF4ZGVpMTQ5dm44dg==" className="text-cream opacity-80 hover:opacity-100 hover:-translate-y-1 transition duration-300">
                                     <FaInstagram size={20} />
                                 </a>
                                 <a href="https://www.facebook.com/profile.php?id=100063644853182" className="text-cream opacity-80 hover:opacity-100 hover:-translate-y-1 transition duration-300">
@@ -248,6 +250,7 @@ export default function MainLayout({ children }) {
                     </div>
                 </div>
             </footer>
+            <WhatsAppButton />
         </div>
     );
 }
