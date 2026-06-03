@@ -37,10 +37,14 @@ class ProductController extends Controller
             });
         }
 
-        $products = $query->get()->map(fn($p) => $this->formatProduct($p));
+        // CHANGED: Use paginate() instead of get(), and through() instead of map()
+        // withQueryString() ensures category filters are kept when clicking "Page 2"
+        $products = $query->paginate(12)
+            ->withQueryString()
+            ->through(fn($p) => $this->formatProduct($p));
 
         return Inertia::render('Products', [
-            'products'        => $products,
+            'products'        => $products, // This is now a Paginator object
             'currentCategory' => $categoryName,
         ]);
     }

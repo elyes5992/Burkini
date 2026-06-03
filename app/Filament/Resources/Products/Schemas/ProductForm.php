@@ -95,8 +95,8 @@ class ProductForm
                             ->required()
                             ->maxSize(10240)
                             ->imageEditor()
-                            // ->optimize('webp') // Converts to WebP automatically
-                            // ->resize(1920, 1080) // Prevents ultra-massive resolutions
+                            ->optimize('webp') // Converts to WebP automatically
+                            ->resize(1920, 1080) // Prevents ultra-massive resolutions
                             ->columnSpanFull(),
 
                         TextInput::make('sort_order')

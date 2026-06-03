@@ -45,12 +45,10 @@ export default function Products({ products, currentCategory }) {
         <MainLayout>
             <div className="max-w-7xl mx-auto px-4 pb-16">
                 
-                {/* En-tête mis à jour avec la police Dream Avenue et l'espacement corrigé */}
                 <h1 className="text-4xl md:text-5xl font-dream text-center mb-10 text-charcoal tracking-wide capitalize">
                     {currentCategory === 'tous' ? 'La Collection' : `Collection ${currentCategory}`}
                 </h1>
 
-                {/* Filtres par pilules avec les couleurs Vellure */}
                 <div className="flex overflow-x-auto space-x-4 pb-4 mb-12 hide-scrollbar justify-start md:justify-center">
                     {categories.map((cat) => (
                         <Link
@@ -67,12 +65,12 @@ export default function Products({ products, currentCategory }) {
                     ))}
                 </div>
 
-                {/* Grille de produits : 2 colonnes mobile, 4 colonnes bureau */}
                 <motion.div 
                     layout
                     className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8 lg:gap-10"
                 >
-                    {products.map((product) => (
+                    {/* MODIFIED: We now map over products.data instead of products */}
+                    {products.data.map((product) => (
                         <motion.div 
                             key={product.id}
                             initial={{ opacity: 0, scale: 0.95 }}
@@ -85,13 +83,15 @@ export default function Products({ products, currentCategory }) {
                                 <div className="relative aspect-[3/4] overflow-hidden bg-cream/50 mb-4">
                                     <ProductBadge tag={product.tag} discount={product.discount_pct} />
 
+                                    {/* MODIFIED: Added lazy loading here */}
                                     <img 
                                         src={product.image} 
                                         alt={product.name} 
+                                        loading="lazy"
+                                        decoding="async"
                                         className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-700"
                                     />
                                     
-                                    {/* Bouton "Voir le produit" */}
                                     <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out hidden md:block">
                                         <button className="bg-cream/95 text-burgundy w-full py-3 text-[10px] uppercase font-bold tracking-[0.1em] hover:bg-burgundy hover:text-cream transition-colors duration-300 shadow-lg">
                                             Découvrir
@@ -99,10 +99,9 @@ export default function Products({ products, currentCategory }) {
                                     </div>
                                 </div>
 
-                                {/* Textes des produits mis à jour */}
                                 <h3 className="text-sm font-medium text-charcoal truncate group-hover:text-burgundy transition mb-1 font-serif text-center">
                                     {product.name}
-                                </h3>
+                               </h3>
                                 
                                 <div className="mt-auto flex flex-wrap items-center justify-center gap-2">
                                     <p className={`text-sm ${product.original_price ? 'text-charcoal font-bold' : 'text-burgundy'}`}>
@@ -119,12 +118,38 @@ export default function Products({ products, currentCategory }) {
                         </motion.div>
                     ))}
                     
-                    {products.length === 0 && (
+                    {/* MODIFIED: Check products.data.length */}
+                    {products.data.length === 0 && (
                         <div className="col-span-full flex justify-center py-20">
                             <p className="text-charcoal/50 font-serif text-lg">Aucun modèle trouvé dans cette catégorie.</p>
                         </div>
                     )}
                 </motion.div>
+
+                {/* NEW: Pagination Links Container */}
+                {products.links && products.links.length > 3 && (
+                    <div className="flex justify-center mt-16 mb-8">
+                        <div className="flex flex-wrap justify-center gap-1 md:gap-2">
+                            {products.links.map((link, index) => (
+                                <Link
+                                    key={index}
+                                    href={link.url || '#'}
+                                    className={`px-4 py-2 text-sm border transition-colors duration-300 ${
+                                        link.active 
+                                            ? 'bg-burgundy text-cream border-burgundy' 
+                                            : !link.url 
+                                                ? 'text-gray-400 border-gray-200 cursor-not-allowed opacity-50' 
+                                                : 'text-charcoal border-gray-300 hover:bg-burgundy hover:text-cream hover:border-burgundy'
+                                    }`}
+                                    // React dangerouslySetInnerHTML is needed because Laravel sends "&laquo;" for Previous/Next arrows
+                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                    preserveScroll
+                                />
+                            ))}
+                        </div>
+                    </div>
+                )}
+
             </div>
         </MainLayout>
     );
