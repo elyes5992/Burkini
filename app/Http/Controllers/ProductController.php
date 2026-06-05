@@ -29,7 +29,8 @@ class ProductController extends Controller
         $categoryName = $request->query('category', 'tous');
 
         $query = Product::with(['category', 'images'])
-            ->orderBy('sort_order', 'asc');
+            ->orderBy('sort_order', 'asc')
+             ->where('is_active', true);
 
         if ($categoryName !== 'tous') {
             $query->whereHas('category', function ($q) use ($categoryName) {
@@ -67,6 +68,7 @@ class ProductController extends Controller
 
         $recommendations = Product::with(['images', 'category'])
             ->where('category_id', $product->category_id)
+             ->where('is_active', true)
             ->where('id', '!=', $id)
             ->inRandomOrder()
             ->take(4)

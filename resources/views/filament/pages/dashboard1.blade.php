@@ -119,7 +119,7 @@
             <h3 style="font-size:14px;font-weight:600;color:#f9fafb;margin:0 0 16px 0;">🌊 Flux des statuts (14 jours)</h3>
             <div style="position:relative;height:260px;width:100%;">
                 <canvas id="statusFlowChart" style="position:absolute;top:0;left:0;width:100%!important;height:100%!important;"></canvas>
-            </div>
+            </div>>
         </div>
 
         {{-- Weekly pattern --}}
