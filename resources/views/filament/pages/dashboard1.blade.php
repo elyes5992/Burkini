@@ -86,7 +86,7 @@
         </div>
     </div>
 
-    {{-- ─── CHARTS GRID ─── --}}
+       {{-- ─── CHARTS GRID ─── --}}
     <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:20px;margin-bottom:24px;">
 
         {{-- MAIN: Orders over time (30 days) --}}
@@ -98,14 +98,18 @@
                     <span style="font-size:11px;color:#34d399;background:#064e3b;padding:3px 10px;border-radius:6px;">Revenus (DT)</span>
                 </div>
             </div>
-            <canvas id="ordersChart" height="100"></canvas>
+            <div style="height:280px;">
+                <canvas id="ordersChart"></canvas>
+            </div>
         </div>
 
         {{-- SIDE: Hourly heatmap --}}
         <div style="grid-column:span 4;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;">
             <h3 style="font-size:14px;font-weight:600;color:#f9fafb;margin:0 0 16px 0;">⏰ Heures de pointe (7j)</h3>
-            <canvas id="hourlyChart" height="140"></canvas>
-            <div style="margin-top:12px;font-size:11px;color:#6b7280;text-align:center;">
+            <div style="height:280px;">
+                <canvas id="hourlyChart"></canvas>
+            </div>
+            <div style="margin-top:8px;font-size:11px;color:#6b7280;text-align:center;">
                 Distribution horaire des commandes
             </div>
         </div>
@@ -113,31 +117,39 @@
         {{-- Status flow stacked area --}}
         <div style="grid-column:span 8;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;">
             <h3 style="font-size:14px;font-weight:600;color:#f9fafb;margin:0 0 16px 0;">🌊 Flux des statuts (14 jours)</h3>
-            <canvas id="statusFlowChart" height="90"></canvas>
+            <div style="height:260px;">
+                <canvas id="statusFlowChart"></canvas>
+            </div>
         </div>
 
         {{-- Weekly pattern --}}
         <div style="grid-column:span 4;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;">
             <h3 style="font-size:14px;font-weight:600;color:#f9fafb;margin:0 0 16px 0;">📅 Jours de la semaine</h3>
-            <canvas id="weeklyChart" height="140"></canvas>
+            <div style="height:260px;">
+                <canvas id="weeklyChart"></canvas>
+            </div>
         </div>
 
         {{-- Avg Order Value trend --}}
         <div style="grid-column:span 6;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;">
             <h3 style="font-size:14px;font-weight:600;color:#f9fafb;margin:0 0 16px 0;">💰 Panier moyen (7 jours)</h3>
-            <canvas id="aovChart" height="100"></canvas>
+            <div style="height:240px;">
+                <canvas id="aovChart"></canvas>
+            </div>
         </div>
 
         {{-- Conversion funnel --}}
         <div style="grid-column:span 3;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;">
             <h3 style="font-size:14px;font-weight:600;color:#f9fafb;margin:0 0 16px 0;">🔄 Tunnel de conversion</h3>
-            <canvas id="funnelChart" height="160"></canvas>
+            <div style="height:240px;">
+                <canvas id="funnelChart"></canvas>
+            </div>
         </div>
 
         {{-- Top cities --}}
         <div style="grid-column:span 3;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;">
             <h3 style="font-size:14px;font-weight:600;color:#f9fafb;margin:0 0 16px 0;">🏙️ Top Villes</h3>
-            <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;flex-direction:column;gap:10px;height:240px;overflow-y:auto;">
                 @foreach($topCities as $i => $city)
                 <div style="display:flex;align-items:center;gap:10px;">
                     <div style="width:24px;height:24px;border-radius:6px;background:{{ ['#f59e0b','#38bdf8','#34d399','#a78bfa','#f87171'][$i] }};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#111;">{{ $i+1 }}</div>
