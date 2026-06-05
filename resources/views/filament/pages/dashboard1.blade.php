@@ -86,11 +86,11 @@
         </div>
     </div>
 
-       {{-- ─── CHARTS GRID ─── --}}
+    {{-- ─── CHARTS GRID ─── --}}
     <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:20px;margin-bottom:24px;">
 
         {{-- MAIN: Orders over time (30 days) --}}
-        <div style="grid-column:span 8;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;">
+        <div style="grid-column:span 8;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;overflow:hidden;min-height:0;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
                 <h3 style="font-size:14px;font-weight:600;color:#f9fafb;margin:0;">📊 Évolution des commandes (30 jours)</h3>
                 <div style="display:flex;gap:8px;">
@@ -98,56 +98,56 @@
                     <span style="font-size:11px;color:#34d399;background:#064e3b;padding:3px 10px;border-radius:6px;">Revenus (DT)</span>
                 </div>
             </div>
-            <div style="height:280px;">
-                <canvas id="ordersChart"></canvas>
+            <div style="position:relative;height:280px;width:100%;">
+                <canvas id="ordersChart" style="position:absolute;top:0;left:0;width:100%!important;height:100%!important;"></canvas>
             </div>
         </div>
 
         {{-- SIDE: Hourly heatmap --}}
-        <div style="grid-column:span 4;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;">
+        <div style="grid-column:span 4;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;overflow:hidden;min-height:0;">
             <h3 style="font-size:14px;font-weight:600;color:#f9fafb;margin:0 0 16px 0;">⏰ Heures de pointe (7j)</h3>
-            <div style="height:280px;">
-                <canvas id="hourlyChart"></canvas>
+            <div style="position:relative;height:248px;width:100%;">
+                <canvas id="hourlyChart" style="position:absolute;top:0;left:0;width:100%!important;height:100%!important;"></canvas>
             </div>
             <div style="margin-top:8px;font-size:11px;color:#6b7280;text-align:center;">
                 Distribution horaire des commandes
             </div>
         </div>
 
-        {{-- Status flow stacked area --}}
-        <div style="grid-column:span 8;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;">
+        {{-- Status flow stacked bar --}}
+        <div style="grid-column:span 8;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;overflow:hidden;min-height:0;">
             <h3 style="font-size:14px;font-weight:600;color:#f9fafb;margin:0 0 16px 0;">🌊 Flux des statuts (14 jours)</h3>
-            <div style="height:260px;">
-                <canvas id="statusFlowChart"></canvas>
+            <div style="position:relative;height:260px;width:100%;">
+                <canvas id="statusFlowChart" style="position:absolute;top:0;left:0;width:100%!important;height:100%!important;"></canvas>
             </div>
         </div>
 
         {{-- Weekly pattern --}}
-        <div style="grid-column:span 4;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;">
+        <div style="grid-column:span 4;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;overflow:hidden;min-height:0;">
             <h3 style="font-size:14px;font-weight:600;color:#f9fafb;margin:0 0 16px 0;">📅 Jours de la semaine</h3>
-            <div style="height:260px;">
-                <canvas id="weeklyChart"></canvas>
+            <div style="position:relative;height:260px;width:100%;">
+                <canvas id="weeklyChart" style="position:absolute;top:0;left:0;width:100%!important;height:100%!important;"></canvas>
             </div>
         </div>
 
         {{-- Avg Order Value trend --}}
-        <div style="grid-column:span 6;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;">
+        <div style="grid-column:span 6;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;overflow:hidden;min-height:0;">
             <h3 style="font-size:14px;font-weight:600;color:#f9fafb;margin:0 0 16px 0;">💰 Panier moyen (7 jours)</h3>
-            <div style="height:240px;">
-                <canvas id="aovChart"></canvas>
+            <div style="position:relative;height:240px;width:100%;">
+                <canvas id="aovChart" style="position:absolute;top:0;left:0;width:100%!important;height:100%!important;"></canvas>
             </div>
         </div>
 
         {{-- Conversion funnel --}}
-        <div style="grid-column:span 3;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;">
+        <div style="grid-column:span 3;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;overflow:hidden;min-height:0;">
             <h3 style="font-size:14px;font-weight:600;color:#f9fafb;margin:0 0 16px 0;">🔄 Tunnel de conversion</h3>
-            <div style="height:240px;">
-                <canvas id="funnelChart"></canvas>
+            <div style="position:relative;height:240px;width:100%;">
+                <canvas id="funnelChart" style="position:absolute;top:0;left:0;width:100%!important;height:100%!important;"></canvas>
             </div>
         </div>
 
         {{-- Top cities --}}
-        <div style="grid-column:span 3;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;">
+        <div style="grid-column:span 3;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;overflow:hidden;min-height:0;">
             <h3 style="font-size:14px;font-weight:600;color:#f9fafb;margin:0 0 16px 0;">🏙️ Top Villes</h3>
             <div style="display:flex;flex-direction:column;gap:10px;height:240px;overflow-y:auto;">
                 @foreach($topCities as $i => $city)
@@ -180,8 +180,7 @@
             type: 'line',
             data: {
                 labels: labels30,
-                datasets: [
-                    {
+                datasets: [{
                         label: 'Commandes',
                         data: ordersData,
                         borderColor: '#38bdf8',
@@ -208,9 +207,14 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
                 plugins: {
-                    legend: { display: false },
+                    legend: {
+                        display: false
+                    },
                     tooltip: {
                         backgroundColor: '#1f2937',
                         borderColor: '#374151',
@@ -232,21 +236,33 @@
                     }
                 },
                 scales: {
-                    x: { grid: { display: false } },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    },
                     y: {
                         type: 'linear',
                         display: true,
                         position: 'left',
-                        grid: { color: 'rgba(55, 65, 81, 0.5)' },
-                        ticks: { stepSize: 1 }
+                        grid: {
+                            color: 'rgba(55, 65, 81, 0.5)'
+                        },
+                        ticks: {
+                            stepSize: 1
+                        }
                     },
                     y1: {
                         type: 'linear',
                         display: true,
                         position: 'right',
-                        grid: { display: false },
+                        grid: {
+                            display: false
+                        },
                         ticks: {
-                            callback: function(value) { return value + ' DT'; }
+                            callback: function(value) {
+                                return value + ' DT';
+                            }
                         }
                     }
                 }
@@ -257,7 +273,9 @@
         new Chart(document.getElementById('hourlyChart'), {
             type: 'bar',
             data: {
-                labels: Array.from({length: 24}, (_, i) => i + 'h'),
+                labels: Array.from({
+                    length: 24
+                }, (_, i) => i + 'h'),
                 datasets: [{
                     label: 'Commandes',
                     data: @json($hourlyDistribution),
@@ -275,10 +293,26 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
                 scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 10 }, maxTicksLimit: 12 } },
-                    y: { display: false }
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 10
+                            },
+                            maxTicksLimit: 12
+                        }
+                    },
+                    y: {
+                        display: false
+                    }
                 }
             }
         });
@@ -323,12 +357,28 @@
                 plugins: {
                     legend: {
                         position: 'top',
-                        labels: { boxWidth: 10, padding: 15, font: { size: 11 } }
+                        labels: {
+                            boxWidth: 10,
+                            padding: 15,
+                            font: {
+                                size: 11
+                            }
+                        }
                     }
                 },
                 scales: {
-                    x: { grid: { display: false }, stacked: true },
-                    y: { stacked: true, ticks: { stepSize: 1 } }
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        stacked: true
+                    },
+                    y: {
+                        stacked: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
                 }
             }
         });
@@ -356,12 +406,26 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
                 scales: {
                     r: {
-                        grid: { color: '#374151' },
-                        ticks: { display: false, backdropColor: 'transparent' },
-                        pointLabels: { font: { size: 11 }, color: '#9ca3af' }
+                        grid: {
+                            color: '#374151'
+                        },
+                        ticks: {
+                            display: false,
+                            backdropColor: 'transparent'
+                        },
+                        pointLabels: {
+                            font: {
+                                size: 11
+                            },
+                            color: '#9ca3af'
+                        }
                     }
                 }
             }
@@ -389,7 +453,9 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: false },
+                    legend: {
+                        display: false
+                    },
                     tooltip: {
                         callbacks: {
                             label: (ctx) => 'Panier moyen: ' + ctx.parsed.y.toFixed(2) + ' DT'
@@ -397,9 +463,15 @@
                     }
                 },
                 scales: {
-                    x: { grid: { display: false } },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    },
                     y: {
-                        ticks: { callback: (v) => v + ' DT' }
+                        ticks: {
+                            callback: (v) => v + ' DT'
+                        }
                     }
                 }
             }
@@ -423,10 +495,25 @@
                 indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
                 scales: {
-                    x: { display: false },
-                    y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+                    x: {
+                        display: false
+                    },
+                    y: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
                 }
             }
         });
