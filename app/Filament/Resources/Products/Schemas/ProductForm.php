@@ -6,8 +6,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
 
@@ -86,33 +85,20 @@ class ProductForm
                     ->preload()
                     ->columnSpanFull(),
 
-                Repeater::make('images')
-                    ->relationship()
-                    ->schema([
-                        FileUpload::make('image_path')
-                            ->image()
-                            ->directory('products')
-                            ->required()
-                            ->maxSize(10240)
-                            ->imageEditor()
-                            ->imageResizeMode('cover') // Optional: dictates how it resizes
-                            ->imageResizeTargetWidth('1920')
-                            ->imageResizeTargetHeight('1080')
-
-                            ->columnSpanFull(),
-
-                        TextInput::make('sort_order')
-                            ->numeric()
-                            ->default(0)
-                            ->minValue(0)
-                            ->label('Sort Order (0 = main image)'),
-                    ])
-                    ->columnSpanFull()
-                    ->defaultItems(1)
+                SpatieMediaLibraryFileUpload::make('images')
+                    ->collection('images')
+                    ->multiple()
                     ->reorderable()
-                    ->collapsible()
-                    ->itemLabel(fn(array $state): ?string => $state['sort_order'] === 0 ? 'Main Image' : 'Image ' . ($state['sort_order'] ?? 'New'))
-                    ->addActionLabel('Add Image'),
+                    ->image()
+                    ->imageEditor()
+                    ->maxFiles(10)
+                    ->maxSize(10240)
+                    ->directory('products')
+                    ->imageResizeMode('cover')
+                    ->imageResizeTargetWidth('1920')
+                    ->imageResizeTargetHeight('1080')
+                    ->columnSpanFull()
+                    ->label('Product Images'),
             ]);
     }
 }
