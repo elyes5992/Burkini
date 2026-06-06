@@ -38,7 +38,7 @@ class Dashboard1 extends Dashboard
         }
 
         // Top 10 products sold
-$topProducts = \App\Models\OrderItem::selectRaw('product_id, SUM(quantity) as total_qty, SUM(quantity * unit_price) as total_revenue')
+$topProducts = \App\Models\OrderItem::selectRaw('product_id, SUM(quantity) as total_qty, SUM(quantity * product_price) as total_revenue')
     ->groupBy('product_id')
     ->orderByDesc('total_qty')
     ->take(10)
