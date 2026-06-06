@@ -17,12 +17,10 @@ class ProductsTable
     {
         return $table
             ->columns([
-                ImageColumn::make('images.image_path')
+                ImageColumn::make('spatieMedia')
                     ->label('Image')
-                    ->circular()
-                    ->stacked()
-                    ->limit(3)
-                    ->limitedRemainingText(),
+                    ->getStateUsing(fn($record) => $record->getFirstMediaUrl('images', 'thumb'))
+                    ->circular(),
 
                 TextColumn::make('name')
                     ->searchable()

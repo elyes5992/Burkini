@@ -30,7 +30,7 @@ class OrdersTable
                         foreach ($record->items as $item) {
                             $imgUrl = $item->product_image ?? null;
                             $img = $imgUrl
-                                ? '<img src="' . e($imgUrl) . '" style="width:38px;height:50px;object-fit:cover;border-radius:5px;flex-shrink:0;">'
+                                ? '<img src="' . e($imgUrl) . '" loading="lazy" style="width:38px;height:50px;object-fit:cover;border-radius:5px;flex-shrink:0;">'
                                 : '<div style="width:38px;height:50px;background:#374151;border-radius:5px;flex-shrink:0;"></div>';
                             $html .= '
                                 <div style="display:flex;align-items:center;gap:10px;">
@@ -76,7 +76,7 @@ class OrdersTable
                                 foreach ($record->items as $item) {
                                     $imgUrl = $item->product_image ?? null;
                                     $img = $imgUrl
-                                        ? '<img src="' . e($imgUrl) . '" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px;margin-bottom:8px;">'
+                                        ? '<img src="' . e($imgUrl) . '" loading="lazy" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px;margin-bottom:8px;">'
                                         : '<div style="width:100%;aspect-ratio:3/4;background:#374151;border-radius:10px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;color:#6b7280;font-size:12px;">Pas d\'image</div>';
                                     $html .= '
                                         <div style="background:#1f2937;border-radius:12px;padding:10px;text-align:center;">
