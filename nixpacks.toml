@@ -3,5 +3,8 @@ cmds = [
   "chmod -R 775 storage bootstrap/cache"
 ]
 
+
+aptPkgs = ["libwebp-dev", "libavif-bin"]
+
 [start]
 cmd = "php artisan storage:link --force && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8080"

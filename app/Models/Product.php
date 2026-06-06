@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Product extends Model
+class Product extends Model implements HasMedia
 {
+    use InteractsWithMedia;
     protected $fillable = [
         'category_id', 'name', 'slug', 'description',
         'price', 'original_price', 'tag', 'is_active', 'front_page' ,'sort_order',
@@ -17,6 +21,26 @@ class Product extends Model
         'is_active'      => 'boolean',
         'front_page'      => 'boolean',
     ];
+
+     /**
+     * Define media conversions — WebP variants at different sizes
+     */
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->width(400)
+            ->height(533) // 3:4 ratio
+            ->format('webp')
+            ->quality(80)
+            ->nonQueued(); // remove this if you set up queues
+
+        $this->addMediaConversion('full')
+            ->width(800)
+            ->height(1067) // 3:4 ratio
+            ->format('webp')
+            ->quality(85)
+            ->nonQueued();
+    }
 
     public function category()
     {

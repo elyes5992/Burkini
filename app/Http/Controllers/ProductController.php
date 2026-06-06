@@ -30,7 +30,7 @@ class ProductController extends Controller
 
         $query = Product::with(['category', 'images'])
             ->orderBy('sort_order', 'asc')
-             ->where('is_active', true);
+            ->where('is_active', true);
 
         if ($categoryName !== 'tous') {
             $query->whereHas('category', function ($q) use ($categoryName) {
@@ -59,16 +59,32 @@ class ProductController extends Controller
     {
         $product = Product::with(['category', 'images', 'sizes'])->findOrFail($id);
 
+        // Build images array — prefer Spatie, fall back to legacy
+        $spatieImages = $product->getMedia('images');
+
+        if ($spatieImages->isNotEmpty()) {
+            $images = $spatieImages->map(fn($m) => [
+                'src'    => $m->getUrl('full'),
+                'srcset' => $m->getUrl('thumb') . ' 400w, ' . $m->getUrl('full') . ' 800w',
+            ])->toArray();
+        } else {
+            $images = $product->images
+                ->map(fn($img) => [
+                    'src'    => '/storage/' . $img->image_path,
+                    'srcset' => null,
+                ])->toArray();
+        }
+
         $formattedProduct = [
             ...$this->formatProduct($product),
             'description' => $product->description,
-            'images'      => $product->images->map(fn($img) => '/storage/' . $img->image_path)->toArray(),
+            'images'      => $images,
             'sizes'       => $product->sizes->pluck('name')->toArray(),
         ];
 
         $recommendations = Product::with(['images', 'category'])
             ->where('category_id', $product->category_id)
-             ->where('is_active', true)
+            ->where('is_active', true)
             ->where('id', '!=', $id)
             ->inRandomOrder()
             ->take(4)
@@ -81,20 +97,41 @@ class ProductController extends Controller
         ]);
     }
 
-    /** Shared formatting helper — always includes tag + pricing */
     private function formatProduct(Product $product): array
     {
+        // Try Spatie media first, fall back to legacy ProductImage
+        $mediaItem = $product->getFirstMedia('images');
+
+        if ($mediaItem) {
+            $imageData = [
+                'image'  => $mediaItem->getUrl('thumb'),   // WebP 400px — default src
+                'srcset' => implode(', ', [
+                    $mediaItem->getUrl('thumb')  . ' 400w',
+                    $mediaItem->getUrl('full')   . ' 800w',
+                ]),
+            ];
+        } else {
+            // Legacy fallback while you migrate
+            $legacyImage = $product->images->first();
+            $imageUrl = $legacyImage
+                ? '/storage/' . $legacyImage->image_path
+                : '/assets/image/default.jpg';
+
+            $imageData = [
+                'image'  => $imageUrl,
+                'srcset' => null,
+            ];
+        }
+
         return [
             'id'             => $product->id,
             'name'           => $product->name,
             'price'          => $product->price,
-            'original_price' => $product->original_price,  // null if no promo
-            'tag'            => $product->tag,              // null | 'promo' | 'bestseller' | 'nouveaute'
-            'discount_pct'   => $product->discountPercent(), // null or int like 25
-            'category'       => $product->category ? $product->category->name : 'Sans catégorie',
-            'image'          => $product->images->first()
-                ? '/storage/' . $product->images->first()->image_path
-                : '/assets/image/default.jpg',
+            'original_price' => $product->original_price,
+            'tag'            => $product->tag,
+            'discount_pct'   => $product->discountPercent(),
+            'category'       => $product->category?->name ?? 'Sans catégorie',
+            ...$imageData,
         ];
     }
 }
