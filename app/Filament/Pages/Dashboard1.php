@@ -37,6 +37,19 @@ class Dashboard1 extends Dashboard
             $dailyRevenue[$d] = $orders->whereBetween('created_at', [$date->copy()->startOfDay(), $date->copy()->endOfDay()])->sum('total_price');
         }
 
+        // Top 10 products sold
+$topProducts = \App\Models\OrderItem::selectRaw('product_id, SUM(quantity) as total_qty, SUM(quantity * unit_price) as total_revenue')
+    ->groupBy('product_id')
+    ->orderByDesc('total_qty')
+    ->take(10)
+    ->with('product:id,name')
+    ->get()
+    ->map(fn($item) => [
+        'name'    => $item->product?->name ?? 'Produit #'.$item->product_id,
+        'qty'     => (int) $item->total_qty,
+        'revenue' => round($item->total_revenue, 2),
+    ]);
+
         // Hourly heatmap data (orders by hour of day, last 7 days)
         $hourlyDistribution = array_fill(0, 24, 0);
         $recentForHourly = $orders->where('created_at', '>=', $now->copy()->subDays(7));
@@ -109,6 +122,8 @@ class Dashboard1 extends Dashboard
             'deliveredOrders' => $orders->where('status', 'delivered')->count(),
             'cancelledOrders' => $orders->where('status', 'cancelled')->count(),
             'totalProducts'   => Product::count(),
+
+            'topProducts' => $topProducts,
 
             // Chart data
             'dailyOrdersLabels' => collect($last30Days)->map(function (Carbon $d) {

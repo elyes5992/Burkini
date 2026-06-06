@@ -87,6 +87,7 @@
     </div>
 
     {{-- ─── CHARTS GRID ─── --}}
+
     <div style="display:grid;grid-template-columns:repeat(12, 1fr);gap:20px;margin-bottom:24px;">
 
         {{-- MAIN: Orders over time (30 days) --}}
@@ -119,37 +120,35 @@
             <h3 style="font-size:14px;font-weight:600;color:#f9fafb;margin:0 0 16px 0;">🌊 Flux des statuts (14 jours)</h3>
             <div style="position:relative;height:260px;width:100%;">
                 <canvas id="statusFlowChart" style="position:absolute;top:0;left:0;width:100%!important;height:100%!important;"></canvas>
-            </div>>
-        </div>
-
-        {{-- Weekly pattern --}}
-        <div style="grid-column:span 4;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;overflow:hidden;min-height:0;">
-            <h3 style="font-size:14px;font-weight:600;color:#f9fafb;margin:0 0 16px 0;">📅 Jours de la semaine</h3>
-            <div style="position:relative;height:260px;width:100%;">
-                <canvas id="weeklyChart" style="position:absolute;top:0;left:0;width:100%!important;height:100%!important;"></canvas>
             </div>
         </div>
 
         {{-- Avg Order Value trend --}}
-        <div style="grid-column:span 6;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;overflow:hidden;min-height:0;">
+        <div style="grid-column:span 4;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;overflow:hidden;min-height:0;">
             <h3 style="font-size:14px;font-weight:600;color:#f9fafb;margin:0 0 16px 0;">💰 Panier moyen (7 jours)</h3>
-            <div style="position:relative;height:240px;width:100%;">
+            <div style="position:relative;height:260px;width:100%;">
                 <canvas id="aovChart" style="position:absolute;top:0;left:0;width:100%!important;height:100%!important;"></canvas>
             </div>
         </div>
 
-        {{-- Conversion funnel --}}
-        <div style="grid-column:span 3;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;overflow:hidden;min-height:0;">
-            <h3 style="font-size:14px;font-weight:600;color:#f9fafb;margin:0 0 16px 0;">🔄 Tunnel de conversion</h3>
-            <div style="position:relative;height:240px;width:100%;">
-                <canvas id="funnelChart" style="position:absolute;top:0;left:0;width:100%!important;height:100%!important;"></canvas>
+        {{-- Top 10 Products --}}
+        <div style="grid-column:span 9;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;overflow:hidden;min-height:0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                <h3 style="font-size:14px;font-weight:600;color:#f9fafb;margin:0;">🏆 Top 10 Produits vendus</h3>
+                <div style="display:flex;gap:8px;">
+                    <span style="font-size:11px;color:#9ca3af;background:#374151;padding:3px 10px;border-radius:6px;">Quantité vendue</span>
+                    <span style="font-size:11px;color:#a78bfa;background:#2e1065;padding:3px 10px;border-radius:6px;">Revenus (DT)</span>
+                </div>
+            </div>
+            <div style="position:relative;height:320px;width:100%;">
+                <canvas id="topProductsChart" style="position:absolute;top:0;left:0;width:100%!important;height:100%!important;"></canvas>
             </div>
         </div>
 
-        {{-- Top cities --}}
+        {{-- Top Cities --}}
         <div style="grid-column:span 3;background:#1f2937;border-radius:12px;padding:20px;border:1px solid #374151;overflow:hidden;min-height:0;">
             <h3 style="font-size:14px;font-weight:600;color:#f9fafb;margin:0 0 16px 0;">🏙️ Top Villes</h3>
-            <div style="display:flex;flex-direction:column;gap:10px;height:240px;overflow-y:auto;">
+            <div style="display:flex;flex-direction:column;gap:10px;height:320px;overflow-y:auto;">
                 @foreach($topCities as $i => $city)
                 <div style="display:flex;align-items:center;gap:10px;">
                     <div style="width:24px;height:24px;border-radius:6px;background:{{ ['#f59e0b','#38bdf8','#34d399','#a78bfa','#f87171'][$i] }};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#111;">{{ $i+1 }}</div>
@@ -166,357 +165,265 @@
     </div>
 
     <script>
-        Chart.defaults.color = '#9ca3af';
-        Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
-        Chart.defaults.scale.grid.color = '#374151';
-        Chart.defaults.scale.grid.borderColor = '#374151';
+    Chart.defaults.color = '#9ca3af';
+    Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
+    Chart.defaults.scale.grid.color = '#374151';
+    Chart.defaults.scale.grid.borderColor = '#374151';
 
-        const labels30 = @json($dailyOrdersLabels);
-        const ordersData = @json($dailyOrdersData);
-        const revenueData = @json($dailyRevenueData);
+    const labels30 = @json($dailyOrdersLabels);
+    const ordersData = @json($dailyOrdersData);
+    const revenueData = @json($dailyRevenueData);
 
-        // ── 1. Orders + Revenue dual axis ──
-        new Chart(document.getElementById('ordersChart'), {
-            type: 'line',
-            data: {
-                labels: labels30,
-                datasets: [{
-                        label: 'Commandes',
-                        data: ordersData,
-                        borderColor: '#38bdf8',
-                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 3,
-                        pointHoverRadius: 6,
-                        yAxisID: 'y'
-                    },
-                    {
-                        label: 'Revenus (DT)',
-                        data: revenueData,
-                        borderColor: '#34d399',
-                        backgroundColor: 'rgba(52, 211, 153, 0.05)',
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 2,
-                        pointHoverRadius: 5,
-                        yAxisID: 'y1'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: {
-                    mode: 'index',
-                    intersect: false
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        backgroundColor: '#1f2937',
-                        borderColor: '#374151',
-                        borderWidth: 1,
-                        titleColor: '#f9fafb',
-                        bodyColor: '#e5e7eb',
-                        padding: 12,
-                        cornerRadius: 8,
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) label += ': ';
-                                if (context.dataset.yAxisID === 'y1') {
-                                    return label + context.parsed.y.toFixed(2) + ' DT';
-                                }
-                                return label + context.parsed.y;
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: {
-                            display: false
-                        }
-                    },
-                    y: {
-                        type: 'linear',
-                        display: true,
-                        position: 'left',
-                        grid: {
-                            color: 'rgba(55, 65, 81, 0.5)'
-                        },
-                        ticks: {
-                            stepSize: 1
-                        }
-                    },
-                    y1: {
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
-                        grid: {
-                            display: false
-                        },
-                        ticks: {
-                            callback: function(value) {
-                                return value + ' DT';
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        // ── 2. Hourly distribution (bar) ──
-        new Chart(document.getElementById('hourlyChart'), {
-            type: 'bar',
-            data: {
-                labels: Array.from({
-                    length: 24
-                }, (_, i) => i + 'h'),
-                datasets: [{
+    // ── 1. Orders + Revenue dual axis ──
+    new Chart(document.getElementById('ordersChart'), {
+        type: 'line',
+        data: {
+            labels: labels30,
+            datasets: [
+                {
                     label: 'Commandes',
-                    data: @json($hourlyDistribution),
-                    backgroundColor: (ctx) => {
-                        const v = ctx.raw;
-                        const max = Math.max(...@json($hourlyDistribution));
-                        const alpha = 0.3 + (v / max) * 0.7;
-                        return `rgba(251, 191, 36, ${alpha})`;
-                    },
-                    borderColor: '#fbbf24',
-                    borderWidth: 1,
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: {
-                            display: false
-                        },
-                        ticks: {
-                            font: {
-                                size: 10
-                            },
-                            maxTicksLimit: 12
-                        }
-                    },
-                    y: {
-                        display: false
-                    }
-                }
-            }
-        });
-
-        // ── 3. Status flow (stacked bar) ──
-        const statusFlow = @json($statusFlowData);
-        const flowLabels = @json($statusFlowLabels);
-        const statuses = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
-        const statusColors = {
-            pending: '#f59e0b',
-            confirmed: '#38bdf8',
-            shipped: '#818cf8',
-            delivered: '#34d399',
-            cancelled: '#f87171'
-        };
-        const statusLabels = {
-            pending: 'En attente',
-            confirmed: 'Confirmées',
-            shipped: 'Expédiées',
-            delivered: 'Livrées',
-            cancelled: 'Annulées'
-        };
-
-        new Chart(document.getElementById('statusFlowChart'), {
-            type: 'bar',
-            data: {
-                labels: flowLabels,
-                datasets: statuses.map(s => ({
-                    label: statusLabels[s],
-                    data: flowLabels.map((_, i) => {
-                        const keys = Object.keys(statusFlow);
-                        return statusFlow[keys[i]]?.[s] || 0;
-                    }),
-                    backgroundColor: statusColors[s],
-                    borderRadius: 3,
-                    barPercentage: 0.7
-                }))
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            boxWidth: 10,
-                            padding: 15,
-                            font: {
-                                size: 11
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: {
-                            display: false
-                        },
-                        stacked: true
-                    },
-                    y: {
-                        stacked: true,
-                        ticks: {
-                            stepSize: 1
-                        }
-                    }
-                }
-            }
-        });
-
-        // ── 4. Weekly pattern (radar/polar) ──
-        new Chart(document.getElementById('weeklyChart'), {
-            type: 'polarArea',
-            data: {
-                labels: @json($weeklyPatternLabels),
-                datasets: [{
-                    data: @json($weeklyPatternData),
-                    backgroundColor: [
-                        'rgba(245, 158, 11, 0.7)',
-                        'rgba(56, 189, 248, 0.7)',
-                        'rgba(52, 211, 153, 0.7)',
-                        'rgba(167, 139, 250, 0.7)',
-                        'rgba(248, 113, 113, 0.7)',
-                        'rgba(251, 191, 36, 0.7)',
-                        'rgba(56, 189, 248, 0.7)'
-                    ],
-                    borderColor: '#1f2937',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    r: {
-                        grid: {
-                            color: '#374151'
-                        },
-                        ticks: {
-                            display: false,
-                            backdropColor: 'transparent'
-                        },
-                        pointLabels: {
-                            font: {
-                                size: 11
-                            },
-                            color: '#9ca3af'
-                        }
-                    }
-                }
-            }
-        });
-
-        // ── 5. AOV Trend ──
-        new Chart(document.getElementById('aovChart'), {
-            type: 'line',
-            data: {
-                labels: @json($avgOrderValueLabels),
-                datasets: [{
-                    label: 'Panier moyen (DT)',
-                    data: @json($avgOrderValueData),
-                    borderColor: '#a78bfa',
-                    backgroundColor: 'rgba(167, 139, 250, 0.1)',
+                    data: ordersData,
+                    borderColor: '#38bdf8',
+                    backgroundColor: 'rgba(56, 189, 248, 0.1)',
                     fill: true,
                     tension: 0.4,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#a78bfa',
-                    pointBorderColor: '#1f2937',
-                    pointBorderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: (ctx) => 'Panier moyen: ' + ctx.parsed.y.toFixed(2) + ' DT'
-                        }
-                    }
+                    pointRadius: 3,
+                    pointHoverRadius: 6,
+                    yAxisID: 'y'
                 },
-                scales: {
-                    x: {
-                        grid: {
-                            display: false
-                        }
-                    },
-                    y: {
-                        ticks: {
-                            callback: (v) => v + ' DT'
-                        }
-                    }
+                {
+                    label: 'Revenus (DT)',
+                    data: revenueData,
+                    borderColor: '#34d399',
+                    backgroundColor: 'rgba(52, 211, 153, 0.05)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 2,
+                    pointHoverRadius: 5,
+                    yAxisID: 'y1'
                 }
-            }
-        });
-
-        // ── 6. Conversion funnel (horizontal bar) ──
-        const funnel = @json($funnelData);
-        new Chart(document.getElementById('funnelChart'), {
-            type: 'bar',
-            data: {
-                labels: ['Total', 'En attente', 'En cours', 'Livrées', 'Annulées'],
-                datasets: [{
-                    label: 'Commandes',
-                    data: [funnel.total, funnel.pending, funnel.processing, funnel.delivered, funnel.cancelled],
-                    backgroundColor: ['#6b7280', '#f59e0b', '#38bdf8', '#34d399', '#f87171'],
-                    borderRadius: 6,
-                    barPercentage: 0.6
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    x: {
-                        display: false
-                    },
-                    y: {
-                        grid: {
-                            display: false
-                        },
-                        ticks: {
-                            font: {
-                                size: 11
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1f2937',
+                    borderColor: '#374151',
+                    borderWidth: 1,
+                    titleColor: '#f9fafb',
+                    bodyColor: '#e5e7eb',
+                    padding: 12,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) label += ': ';
+                            if (context.dataset.yAxisID === 'y1') {
+                                return label + context.parsed.y.toFixed(2) + ' DT';
                             }
+                            return label + context.parsed.y;
                         }
                     }
                 }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    grid: { color: 'rgba(55, 65, 81, 0.5)' },
+                    ticks: { stepSize: 1 }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    grid: { display: false },
+                    ticks: { callback: (value) => value + ' DT' }
+                }
             }
-        });
-    </script>
+        }
+    });
+
+    // ── 2. Hourly distribution (bar) ──
+    new Chart(document.getElementById('hourlyChart'), {
+        type: 'bar',
+        data: {
+            labels: Array.from({ length: 24 }, (_, i) => i + 'h'),
+            datasets: [{
+                label: 'Commandes',
+                data: @json($hourlyDistribution),
+                backgroundColor: (ctx) => {
+                    const v = ctx.raw;
+                    const max = Math.max(...@json($hourlyDistribution));
+                    const alpha = 0.3 + (v / max) * 0.7;
+                    return `rgba(251, 191, 36, ${alpha})`;
+                },
+                borderColor: '#fbbf24',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { display: false }, ticks: { font: { size: 10 }, maxTicksLimit: 12 } },
+                y: { display: false }
+            }
+        }
+    });
+
+    // ── 3. Status flow (stacked bar) ──
+    const statusFlow = @json($statusFlowData);
+    const flowLabels = @json($statusFlowLabels);
+    const statuses = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+    const statusColors = {
+        pending: '#f59e0b', confirmed: '#38bdf8', shipped: '#818cf8',
+        delivered: '#34d399', cancelled: '#f87171'
+    };
+    const statusLabels = {
+        pending: 'En attente', confirmed: 'Confirmées', shipped: 'Expédiées',
+        delivered: 'Livrées', cancelled: 'Annulées'
+    };
+
+    new Chart(document.getElementById('statusFlowChart'), {
+        type: 'bar',
+        data: {
+            labels: flowLabels,
+            datasets: statuses.map(s => ({
+                label: statusLabels[s],
+                data: flowLabels.map((_, i) => {
+                    const keys = Object.keys(statusFlow);
+                    return statusFlow[keys[i]]?.[s] || 0;
+                }),
+                backgroundColor: statusColors[s],
+                borderRadius: 3,
+                barPercentage: 0.7
+            }))
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: { boxWidth: 10, padding: 15, font: { size: 11 } }
+                }
+            },
+            scales: {
+                x: { grid: { display: false }, stacked: true },
+                y: { stacked: true, ticks: { stepSize: 1 } }
+            }
+        }
+    });
+
+    // ── 4. AOV Trend ──
+    new Chart(document.getElementById('aovChart'), {
+        type: 'line',
+        data: {
+            labels: @json($avgOrderValueLabels),
+            datasets: [{
+                label: 'Panier moyen (DT)',
+                data: @json($avgOrderValueData),
+                borderColor: '#a78bfa',
+                backgroundColor: 'rgba(167, 139, 250, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: '#a78bfa',
+                pointBorderColor: '#1f2937',
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => 'Panier moyen: ' + ctx.parsed.y.toFixed(2) + ' DT'
+                    }
+                }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: { ticks: { callback: (v) => v + ' DT' } }
+            }
+        }
+    });
+
+    // ── 5. Top 10 Products (horizontal grouped bar) ──
+    const topProducts = @json($topProducts);
+    const productNames = topProducts.map(p => p.name.length > 25 ? p.name.substring(0, 25) + '…' : p.name);
+    const productQtys = topProducts.map(p => p.qty);
+    const productRevenues = topProducts.map(p => p.revenue);
+
+    new Chart(document.getElementById('topProductsChart'), {
+        type: 'bar',
+        data: {
+            labels: productNames,
+            datasets: [
+                {
+                    label: 'Quantité vendue',
+                    data: productQtys,
+                    backgroundColor: 'rgba(56, 189, 248, 0.8)',
+                    borderColor: '#38bdf8',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Revenus (DT)',
+                    data: productRevenues,
+                    backgroundColor: 'rgba(167, 139, 250, 0.8)',
+                    borderColor: '#a78bfa',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1f2937',
+                    borderColor: '#374151',
+                    borderWidth: 1,
+                    titleColor: '#f9fafb',
+                    bodyColor: '#e5e7eb',
+                    padding: 12,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: function(context) {
+                            if (context.datasetIndex === 0) return ' Qté: ' + context.parsed.x;
+                            return ' Revenu: ' + context.parsed.x.toFixed(2) + ' DT';
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: { display: false },
+                y: {
+                    grid: { display: false },
+                    ticks: { font: { size: 11 }, color: '#d1d5db' }
+                },
+                y1: { display: false }
+            }
+        }
+    });
+</script>
 
 </x-filament::page>
