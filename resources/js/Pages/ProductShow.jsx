@@ -323,7 +323,7 @@ export default function ProductShow({ product, recommendations }) {
                             <div className="mb-8">
                                 <div className="flex justify-between items-center mb-3">
                                     <h3 className="font-medium text-stone-900">Sélectionnez une taille</h3>
-                                    <a href="#" className="text-sm text-sky-600 underline hover:text-sky-800">Guide des tailles</a>
+                                    <a href={route('guide-tailles')} className="text-sm text-sky-600 underline hover:text-sky-800">Guide des tailles</a>
                                 </div>
                                 <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
                                     {product.sizes.map((size) => (
