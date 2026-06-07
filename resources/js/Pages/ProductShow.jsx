@@ -46,7 +46,7 @@ const ProductBadge = ({ tag, discount }) => {
 
 export default function ProductShow({ product, recommendations }) {
     const [selectedSize, setSelectedSize] = useState(null);
-    const [mainImage, setMainImage] = useState(product.images[0]);
+    const [mainImage, setMainImage] = useState(product.images[0]?.src);
     const [isWishlisted, setIsWishlisted] = useState(false);
     const [cartOpen, setCartOpen] = useState(false);
     const [cartItems, setCartItems] = useState([]);
@@ -250,10 +250,11 @@ export default function ProductShow({ product, recommendations }) {
                             {product.images.map((img, index) => (
                                 <button
                                     key={index}
-                                    onClick={() => setMainImage(img)}
-                                    className={`relative aspect-[3/4] md:w-full w-20 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all ${mainImage === img ? 'border-sky-700 opacity-100' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                                    onClick={() => setMainImage(img.src)}
+                                    className={`relative aspect-[3/4] md:w-full w-20 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all ${mainImage === img.src ? 'border-sky-700 opacity-100' : 'border-transparent opacity-60 hover:opacity-100'
+                                        }`}
                                 >
-                                    <img src={img} alt={`Miniature ${index + 1}`} className="w-full h-full object-cover" />
+                                    <img src={img.src} alt={`Miniature ${index + 1}`} className="w-full h-full object-cover" />
                                 </button>
                             ))}
                         </div>
@@ -269,7 +270,13 @@ export default function ProductShow({ product, recommendations }) {
                             {/* Rendering the Smart Badge */}
                             <ProductBadge tag={product.tag} discount={product.discount_pct} />
 
-                            <img src={mainImage} alt={product.name} className="w-full h-full object-cover object-top" />
+                            <img
+                                src={mainImage}
+                                srcSet={product.images.find(img => img.src === mainImage)?.srcset || undefined}
+                                sizes="(max-width: 1024px) 100vw, 50vw"
+                                alt={product.name}
+                                className="w-full h-full object-cover object-top"
+                            />
 
                             <button
                                 onClick={() => setIsWishlisted(!isWishlisted)}
