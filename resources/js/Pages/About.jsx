@@ -21,7 +21,7 @@ export default function About() {
                     className="prose prose-stone lg:prose-lg mx-auto text-stone-600 leading-relaxed text-justify"
                 >
                     <p className="mb-6">
-                        Chez AquaChic, nous croyons que la plage est un lieu de détente, de joie et d'expression de soi. 
+                        Chez Vellure, nous croyons que la plage est un lieu de détente, de joie et d'expression de soi. 
                         Notre mission est d'offrir des maillots de bain de haute qualité, confortables et esthétiques pour 
                         toutes les femmes, qu'elles recherchent un style classique, couvrant ou pour leurs enfants.
                     </p>
