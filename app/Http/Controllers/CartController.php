@@ -35,7 +35,7 @@ class CartController extends Controller
             'quantity'   => 'integer|min:1|max:10',
         ]);
 
-        $product  = Product::with('images')->findOrFail($validated['product_id']);
+       $product  = Product::with(['images', 'media'])->findOrFail($validated['product_id']);
         $size     = $validated['size'];
         $quantity = $validated['quantity'] ?? 1;
         $cart     = $this->getCart();
@@ -53,9 +53,10 @@ class CartController extends Controller
                 'price'    => (float) $product->price,
                 'size'     => $size,
                 'quantity' => $quantity,
-                'image'    => $product->images->first()
-                    ? '/storage/' . $product->images->first()->image_path
-                    : '/assets/image/default.jpg',
+                'image'    => $product->getFirstMediaUrl('images', 'thumb')
+                    ?: ($product->images->first()
+                        ? '/storage/' . $product->images->first()->image_path
+                        : '/assets/image/default.jpg'),
             ];
         }
 
@@ -95,7 +96,7 @@ class CartController extends Controller
         return back();
     }
     public function json()
-{
-    return response()->json(session()->get('cart', []));
-}
+    {
+        return response()->json(session()->get('cart', []));
+    }
 }
