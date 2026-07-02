@@ -46,7 +46,6 @@ export default function MainLayout({ children }) {
         exit: { opacity: 0, clipPath: "polygon(0 0, 100% 0, 100% 0, 0 0)", transition: { duration: 0.5, ease: [0.11, 0, 0.5, 0] } }
     };
 
-    // CORRECTION : L'animation du texte cherchait 'open' au lieu de 'animate'
     const linkVars = {
         initial: { y: 30, opacity: 0 },
         animate: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } }
@@ -85,7 +84,6 @@ export default function MainLayout({ children }) {
                                 <img
                                     src="/image/logo.png"
                                     alt="Vellure Logo"
-                                    /* Changed h-10 md:h-14 to h-14 md:h-20 */
                                     className="h-14 md:h-20 w-auto object-contain transition duration-300 group-hover:opacity-70"
                                 />
                             </Link>
@@ -141,12 +139,13 @@ export default function MainLayout({ children }) {
                                 ))}
                             </div>
 
-                            {/* Footer du Menu Mobile */}
+                            {/* Footer du Menu Mobile - MODIFIÉ ICI */}
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: 0.8 }}
-                                className="absolute bottom-10 flex flex-col items-center space-y-6"
+                                // bottom-32 (au lieu de bottom-10) remonte le bloc au-dessus du bouton WhatsApp
+                                className="absolute bottom-32 w-full flex flex-col items-center space-y-5"
                             >
                                 <div className="flex space-x-6 text-charcoal">
                                     <a href="https://www.instagram.com/boutheina_maillotdeplage?igsh=MXF4ZGVpMTQ5dm44dg==" className="hover:text-burgundy hover:scale-110 transition duration-300">
@@ -163,12 +162,10 @@ export default function MainLayout({ children }) {
                 </AnimatePresence>
             </nav>
 
-            {/* CORRECTION : pt-32 empêche le contenu de passer sous le menu transparent */}
             <main className="flex-grow w-full pt-32">
                 {children}
             </main>
 
-            {/* Footer */}
             {/* Footer */}
             <footer className="bg-charcoal pt-24 pb-12 mt-12">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -180,7 +177,6 @@ export default function MainLayout({ children }) {
                                 <img
                                     src="/image/logo.png"
                                     alt="Vellure Logo"
-                                    /* Note: brightness-0 invert makes the black logo white so it's visible on the dark footer */
                                     className="h-10 md:h-12 w-auto object-contain brightness-0 invert opacity-90 group-hover:opacity-100 transition duration-300"
                                 />
                             </Link>
@@ -203,7 +199,6 @@ export default function MainLayout({ children }) {
                             <ul className="space-y-4 text-sm font-light">
                                 {navLinks.slice(0, 5).map(link => (
                                     <li key={link.name}>
-                                        {/* FIX: split text-cream and opacity */}
                                         <Link href={link.href} className="text-cream opacity-70 hover:opacity-100 transition relative group inline-block">
                                             {link.name}
                                             <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-cream transition-all duration-300 group-hover:w-full"></span>
@@ -218,17 +213,14 @@ export default function MainLayout({ children }) {
                             <h4 className="text-cream text-[11px] font-bold uppercase tracking-[0.2em] mb-8">Assistance</h4>
                             <ul className="space-y-4 text-sm font-light text-cream opacity-70">
                                 <li><Link href={route('about')} className="hover:opacity-100 transition">L'Histoire Vellure</Link></li>
-                                {/* UPDATED LINKS HERE */}
                                 <li><Link href={route('livraison')} className="hover:opacity-100 transition">Livraison & Retours</Link></li>
                                 <li><Link href={route('guide-tailles')} className="hover:opacity-100 transition">Guide des Tailles</Link></li>
-
                             </ul>
                         </div>
 
                         {/* Newsletter */}
                         <div>
                             <h4 className="text-cream text-[11px] font-bold uppercase tracking-[0.2em] mb-8">Le Cercle Vellure</h4>
-                            {/* FIX: split text-cream and opacity */}
                             <p className="text-sm font-light mb-6 text-cream opacity-60">Inscrivez-vous pour découvrir nos nouvelles collections en avant-première.</p>
                             <div className="flex border-b border-cream border-opacity-30 pb-2 mb-8 focus-within:border-opacity-100 transition duration-300">
                                 <input type="email" placeholder="Votre e-mail" className="bg-transparent border-none outline-none w-full text-sm text-cream placeholder-cream placeholder-opacity-40" />

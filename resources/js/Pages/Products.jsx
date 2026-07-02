@@ -1,7 +1,11 @@
 import MainLayout from '@/Layouts/MainLayout';
-import { motion } from 'framer-motion';
-import { Link } from '@inertiajs/react';
-import { Flame, Star, Sparkles, Tag } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Link, router } from '@inertiajs/react';
+import { 
+    Flame, Star, Sparkles, Tag, SlidersHorizontal, 
+    Droplets, Wind, Feather, RefreshCw, 
+    ShoppingBag, Heart, Award 
+} from 'lucide-react';
 
 const ProductBadge = ({ tag, discount }) => {
     if (!tag) return null;
@@ -38,110 +42,195 @@ const ProductBadge = ({ tag, discount }) => {
     );
 };
 
-export default function Products({ products, currentCategory }) {
-    const categories = ['tous', 'non voilée', 'voilée', 'enfant'];
+export default function Products({ products, currentCategory, currentSize, availableSizes }) {
+
+    const handleFilterChange = (filterType, value) => {
+        router.get(route('products'), {
+            category: filterType === 'category' ? value : currentCategory,
+            size: filterType === 'size' ? (value || undefined) : currentSize
+        }, { 
+            preserveState: true, 
+            preserveScroll: true 
+        });
+    };
 
     return (
         <MainLayout>
-            <div className="max-w-7xl mx-auto px-4 pb-16">
+            <div className="max-w-7xl mx-auto px-4 pb-20 pt-8 md:pt-12">
 
-                <h1 className="text-4xl md:text-5xl font-dream text-center mb-10 text-charcoal tracking-wide capitalize">
-                    {currentCategory === 'tous' ? 'La Collection' : `Collection ${currentCategory}`}
-                </h1>
+                {/* --- HEADER: Titre --- */}
+                <div className="text-center mb-10">
+                    <h1 className="text-4xl md:text-5xl font-dream text-charcoal tracking-wide capitalize mb-6">
+                        {currentCategory === 'tous' ? 'La Collection' : `Collection ${currentCategory}`}
+                    </h1>
+                    <div className="flex justify-center items-center gap-4 mt-4">
+                        <span className="h-[1px] w-12 bg-burgundy/20"></span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-burgundy/40"></span>
+                        <span className="h-[1px] w-12 bg-burgundy/20"></span>
+                    </div>
+                </div>
 
-                <div className="flex overflow-x-auto space-x-4 pb-4 mb-12 hide-scrollbar justify-start md:justify-center">
-                    {categories.map((cat) => (
-                        <Link
-                            key={cat}
-                            href={route('products', { category: cat })}
-                            className={`whitespace-nowrap px-8 py-2.5 text-[11px] uppercase tracking-widest font-bold transition duration-300 ${currentCategory === cat
-                                    ? 'bg-burgundy text-cream shadow-md'
-                                    : 'bg-transparent text-charcoal border border-burgundy/20 hover:bg-burgundy/5'
-                                }`}
+                {/* --- AVANTAGES PRODUITS --- */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-12 max-w-5xl mx-auto">
+                    {[
+                        { icon: <Droplets size={20} strokeWidth={1.5} />, text: "Tissu polyamide spécial maillot" },
+                        { icon: <Wind size={20} strokeWidth={1.5} />, text: "Séchage ultra-rapide" },
+                        { icon: <Feather size={20} strokeWidth={1.5} />, text: "Ne colle pas au corps" },
+                        { icon: <RefreshCw size={20} strokeWidth={1.5} />, text: "Possibilité d'échange" }
+                    ].map((item, idx) => (
+                        <motion.div 
+                            key={idx}
+                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * idx }}
+                            className="bg-[#F9F8F6] border border-burgundy/5 p-4 flex flex-col items-center justify-center text-center gap-3 hover:border-burgundy/20 transition-colors duration-300 shadow-sm"
                         >
-                            {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                        </Link>
+                            <div className="text-burgundy bg-white p-2 rounded-full shadow-sm">
+                                {item.icon}
+                            </div>
+                            <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-charcoal leading-relaxed">
+                                {item.text}
+                            </span>
+                        </motion.div>
                     ))}
                 </div>
 
+                {/* --- BARRE DE FILTRES MINIMALISTE --- */}
+                <div className="bg-[#F9F8F6] border border-burgundy/10 p-3 md:p-5 mb-12 flex flex-col md:flex-row justify-between items-center gap-4 shadow-sm">
+                    
+                    <div className="flex flex-row gap-2 md:gap-4 w-full md:w-auto">
+                        
+                        {/* Dropdown Catégorie */}
+                        <div className="relative flex-1 md:w-56">
+                            <select 
+                                value={currentCategory} 
+                                onChange={(e) => handleFilterChange('category', e.target.value)}
+                                className="w-full appearance-none bg-none bg-white border border-burgundy/20 text-charcoal text-[10px] md:text-[11px] uppercase tracking-widest font-bold py-3 pl-3 pr-8 focus:ring-1 focus:ring-burgundy focus:border-burgundy cursor-pointer outline-none transition-colors hover:border-burgundy shadow-sm"
+                            >
+                                <option value="tous">Toutes les catégories</option>
+                                <option value="non voilée">Non Voilées</option>
+                                <option value="voilée">Voilées</option>
+                                <option value="enfant">Enfants</option>
+                            </select>
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 md:px-3 text-burgundy">
+                                <svg className="fill-current h-3 w-3" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                            </div>
+                        </div>
+
+                        {/* Dropdown Taille */}
+                        <div className="relative flex-1 md:w-48">
+                            <select 
+                                value={currentSize || ''} 
+                                onChange={(e) => handleFilterChange('size', e.target.value)}
+                                className="w-full appearance-none bg-none bg-white border border-burgundy/20 text-charcoal text-[10px] md:text-[11px] uppercase tracking-widest font-bold py-3 pl-3 pr-8 focus:ring-1 focus:ring-burgundy focus:border-burgundy cursor-pointer outline-none transition-colors hover:border-burgundy shadow-sm"
+                            >
+                                <option value="">Toutes les tailles</option>
+                                {availableSizes.map(size => (
+                                    <option key={size} value={size}>{size}</option>
+                                ))}
+                            </select>
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 md:px-3 text-burgundy">
+                                <svg className="fill-current h-3 w-3" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div className="w-full md:w-auto border-t md:border-t-0 border-burgundy/10 pt-3 md:pt-0">
+                        <div className="text-[10px] md:text-xs uppercase tracking-widest font-bold text-charcoal bg-white px-4 py-2.5 border border-burgundy/10 shadow-sm text-center">
+                            {products.total} Modèle{products.total > 1 ? 's' : ''}
+                        </div>
+                    </div>
+
+                </div>
+
+                {/* --- GRILLE DE PRODUITS --- */}
                 <motion.div
                     layout
-                    className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8 lg:gap-10"
+                    className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10 md:gap-x-8 md:gap-y-12"
                 >
-                    {/* MODIFIED: We now map over products.data instead of products */}
-                    {products.data.map((product) => (
-                        <motion.div
-                            key={product.id}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.4 }}
-                            className="flex flex-col group h-full"
-                        >
-                            <Link href={route('product.show', product.id)} className="block w-full h-full cursor-pointer flex flex-col">
+                    <AnimatePresence mode='popLayout'>
+                        {products.data.map((product) => (
+                            <motion.div
+                                key={product.id}
+                                layout
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                transition={{ duration: 0.4 }}
+                                className="flex flex-col group h-full"
+                            >
+                                <Link href={route('product.show', product.id)} className="block w-full h-full cursor-pointer flex flex-col">
 
-                                <div className="relative aspect-[3/4] overflow-hidden bg-cream/50 mb-4">
-                                    <ProductBadge tag={product.tag} discount={product.discount_pct} />
+                                    <div className="relative aspect-[3/4] overflow-hidden bg-[#F9F8F6] mb-5 shadow-sm group-hover:shadow-md transition-shadow duration-500">
+                                        <ProductBadge tag={product.tag} discount={product.discount_pct} />
 
-                                    {/* MODIFIED: Added lazy loading here */}
-                                    <img
-                                        src={product.image}
-                                        srcSet={product.srcset || undefined}
-                                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                                        alt={product.name}
-                                        loading="lazy"
-                                        decoding="async"
-                                        className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-700"
-                                    />
+                                        <img
+                                            src={product.image}
+                                            srcSet={product.srcset || undefined}
+                                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                                            alt={product.name}
+                                            loading="lazy"
+                                            decoding="async"
+                                            className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-700 ease-in-out"
+                                        />
 
-                                    <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out hidden md:block">
-                                        <button className="bg-cream/95 text-burgundy w-full py-3 text-[10px] uppercase font-bold tracking-[0.1em] hover:bg-burgundy hover:text-cream transition-colors duration-300 shadow-lg">
-                                            Découvrir
-                                        </button>
+                                        <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out hidden md:block">
+                                            <button className="bg-cream/95 text-burgundy w-full py-3 text-[10px] uppercase font-bold tracking-[0.1em] hover:bg-burgundy hover:text-cream transition-colors duration-300 shadow-lg border border-transparent hover:border-cream/20">
+                                                Découvrir
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <h3 className="text-sm font-medium text-charcoal truncate group-hover:text-burgundy transition mb-1 font-serif text-center">
-                                    {product.name}
-                                </h3>
+                                    <h3 className="text-sm md:text-base font-medium text-charcoal truncate group-hover:text-burgundy transition-colors duration-300 mb-1.5 font-serif text-center px-2">
+                                        {product.name}
+                                    </h3>
 
-                                <div className="mt-auto flex flex-wrap items-center justify-center gap-2">
-                                    <p className={`text-sm ${product.original_price ? 'text-charcoal font-bold' : 'text-burgundy'}`}>
-                                        {parseFloat(product.price).toFixed(2)} DT
-                                    </p>
-                                    {product.original_price && (
-                                        <p className="text-[11px] text-charcoal/40 line-through">
-                                            {parseFloat(product.original_price).toFixed(2)} DT
+                                    <div className="mt-auto flex flex-wrap items-center justify-center gap-2.5">
+                                        <p className={`text-sm tracking-wide ${product.original_price ? 'text-charcoal font-bold' : 'text-burgundy font-medium'}`}>
+                                            {parseFloat(product.price).toFixed(2)} DT
                                         </p>
-                                    )}
-                                </div>
+                                        {product.original_price && (
+                                            <p className="text-[11px] text-charcoal/40 line-through">
+                                                {parseFloat(product.original_price).toFixed(2)} DT
+                                            </p>
+                                        )}
+                                    </div>
 
-                            </Link>
-                        </motion.div>
-                    ))}
+                                </Link>
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
 
-                    {/* MODIFIED: Check products.data.length */}
                     {products.data.length === 0 && (
-                        <div className="col-span-full flex justify-center py-20">
-                            <p className="text-charcoal/50 font-serif text-lg">Aucun modèle trouvé dans cette catégorie.</p>
+                        <div className="col-span-full flex flex-col items-center justify-center py-24 text-center bg-[#F9F8F6] border border-dashed border-burgundy/30">
+                            <SlidersHorizontal size={40} className="text-burgundy/40 mb-4" />
+                            <h3 className="text-xl font-dream text-charcoal mb-2">Aucun modèle disponible</h3>
+                            <p className="text-charcoal/60 font-serif max-w-md">
+                                Nous n'avons pas trouvé de modèles correspondant à ces critères. Essayez de modifier la catégorie ou la taille.
+                            </p>
+                            <button 
+                                onClick={() => router.get(route('products'))}
+                                className="mt-6 bg-burgundy text-cream px-6 py-3 text-[10px] uppercase font-bold tracking-widest hover:bg-charcoal transition-colors shadow-md"
+                            >
+                                Voir toute la collection
+                            </button>
                         </div>
                     )}
                 </motion.div>
 
-                {/* NEW: Pagination Links Container */}
+                {/* --- PAGINATION --- */}
                 {products.links && products.links.length > 3 && (
-                    <div className="flex justify-center mt-16 mb-8">
-                        <div className="flex flex-wrap justify-center gap-1 md:gap-2">
+                    <div className="flex justify-center mt-20 border-t border-charcoal/10 pt-10">
+                        <div className="flex flex-wrap justify-center gap-2">
                             {products.links.map((link, index) => (
                                 <Link
                                     key={index}
                                     href={link.url || '#'}
-                                    className={`px-4 py-2 text-sm border transition-colors duration-300 ${link.active
-                                            ? 'bg-burgundy text-cream border-burgundy'
+                                    className={`px-4 py-2 text-xs uppercase tracking-widest font-bold transition-colors duration-300 ${link.active
+                                            ? 'bg-burgundy text-cream shadow-sm'
                                             : !link.url
-                                                ? 'text-gray-400 border-gray-200 cursor-not-allowed opacity-50'
-                                                : 'text-charcoal border-gray-300 hover:bg-burgundy hover:text-cream hover:border-burgundy'
+                                                ? 'text-charcoal/30 cursor-not-allowed'
+                                                : 'text-charcoal hover:bg-burgundy/5 border border-transparent hover:border-burgundy/20 bg-[#F9F8F6]'
                                         }`}
-                                    // React dangerouslySetInnerHTML is needed because Laravel sends "&laquo;" for Previous/Next arrows
                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                     preserveScroll
                                 />
@@ -149,6 +238,59 @@ export default function Products({ products, currentCategory }) {
                         </div>
                     </div>
                 )}
+
+                {/* --- STATISTIQUES (RÉASSURANCE) --- */}
+                <motion.div 
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.8 }}
+                    className="mt-24 mb-8 pt-16 border-t border-burgundy/10 overflow-hidden"
+                >
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-burgundy/10">
+                        
+                        {/* Bloc 1 */}
+                        <div className="flex flex-col items-center justify-center relative group py-8 md:py-4">
+                            {/* z-0 au lieu de -z-10, opacité augmentée à 5% et 10% au hover */}
+                            <div className="absolute inset-0 flex items-center justify-center text-burgundy opacity-5 group-hover:opacity-10 transition-opacity duration-700 transform scale-[2.5] z-0">
+                                <ShoppingBag size={100} strokeWidth={1} />
+                            </div>
+                            <div className="relative z-10 flex flex-col items-center">
+                                <span className="text-6xl md:text-7xl font-dream text-burgundy mb-2 tracking-tighter">+3k</span>
+                                <span className="text-[11px] md:text-xs uppercase tracking-[0.2em] font-bold text-charcoal/80">
+                                    Unités Vendues
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Bloc 2 */}
+                        <div className="flex flex-col items-center justify-center relative group py-8 md:py-4">
+                            <div className="absolute inset-0 flex items-center justify-center text-burgundy opacity-5 group-hover:opacity-10 transition-opacity duration-700 transform scale-[2.5] z-0">
+                                <Heart size={100} strokeWidth={1} />
+                            </div>
+                            <div className="relative z-10 flex flex-col items-center">
+                                <span className="text-6xl md:text-7xl font-dream text-burgundy mb-2 tracking-tighter">98%</span>
+                                <span className="text-[11px] md:text-xs uppercase tracking-[0.2em] font-bold text-charcoal/80">
+                                    Clientes Satisfaites
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Bloc 3 */}
+                        <div className="flex flex-col items-center justify-center relative group py-8 md:py-4">
+                            <div className="absolute inset-0 flex items-center justify-center text-burgundy opacity-5 group-hover:opacity-10 transition-opacity duration-700 transform scale-[2.5] z-0">
+                                <Award size={100} strokeWidth={1} />
+                            </div>
+                            <div className="relative z-10 flex flex-col items-center">
+                                <span className="text-6xl md:text-7xl font-dream text-burgundy mb-2 tracking-tighter">5 Ans</span>
+                                <span className="text-[11px] md:text-xs uppercase tracking-[0.2em] font-bold text-charcoal/80">
+                                    D'Expertise Mode
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
+                </motion.div>
 
             </div>
         </MainLayout>

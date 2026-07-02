@@ -24,29 +24,45 @@ class ProductController extends Controller
         ]);
     }
 
-    public function products(Request $request)
+   public function products(Request $request)
     {
         $categoryName = $request->query('category', 'tous');
+        $sizeFilter = $request->query('size'); // Nouveau paramètre
 
         $query = Product::with(['category', 'images'])
             ->orderBy('sort_order', 'asc')
             ->where('is_active', true);
 
+        // Filtre par catégorie
         if ($categoryName !== 'tous') {
             $query->whereHas('category', function ($q) use ($categoryName) {
                 $q->whereRaw('LOWER(name) = ?', [strtolower($categoryName)]);
             });
         }
 
-        // CHANGED: Use paginate() instead of get(), and through() instead of map()
-        // withQueryString() ensures category filters are kept when clicking "Page 2"
+        // NOUVEAU : Filtre par taille (avec vérification du stock)
+        if ($sizeFilter) {
+            $query->whereHas('sizes', function ($q) use ($sizeFilter) {
+                $q->where('sizes.name', $sizeFilter)
+                  ->where('product_size.stock_quantity', '>', 0);
+            });
+        }
+
         $products = $query->paginate(12)
-            ->withQueryString()
+            ->withQueryString() // Garde les paramètres category et size dans la pagination
             ->through(fn($p) => $this->formatProduct($p));
 
+        // NOUVEAU : Récupérer toutes les tailles uniques pour le menu déroulant
+        // On ne récupère que les tailles liées à des produits actifs
+        $availableSizes = \App\Models\Size::whereHas('products', function($q) {
+            $q->where('is_active', true);
+        })->orderBy('name')->pluck('name');
+
         return Inertia::render('Products', [
-            'products'        => $products, // This is now a Paginator object
+            'products'        => $products,
             'currentCategory' => $categoryName,
+            'currentSize'     => $sizeFilter,     // On passe la taille actuelle à React
+            'availableSizes'  => $availableSizes, // On passe la liste des tailles
         ]);
     }
 
