@@ -49,7 +49,7 @@ class Product extends Model implements HasMedia
 
     public function sizes()
     {
-        return $this->belongsToMany(Size::class)->withPivot('stock_quantity');
+        return $this->belongsToMany(Size::class);
     }
 
     public function images()

@@ -93,17 +93,19 @@ export default function Products({ products, currentCategory, currentSize, avail
                     ))}
                 </div>
 
-                {/* --- BARRE DE FILTRES MINIMALISTE --- */}
-                <div className="bg-[#F9F8F6] border border-burgundy/10 p-3 md:p-5 mb-12 flex flex-col md:flex-row justify-between items-center gap-4 shadow-sm">
+                {/* --- BARRE DE FILTRES ULTRA MINIMALISTE --- */}
+                {/* Suppression du "gros bloc blanc" : plus de bg, plus de border, plus de padding parent */}
+                <div className="mb-12 flex flex-col md:flex-row justify-between items-center gap-6 w-full">
                     
-                    <div className="flex flex-row gap-2 md:gap-4 w-full md:w-auto">
+                    <div className="flex flex-row gap-3 w-full md:w-auto">
                         
                         {/* Dropdown Catégorie */}
                         <div className="relative flex-1 md:w-56">
                             <select 
                                 value={currentCategory} 
                                 onChange={(e) => handleFilterChange('category', e.target.value)}
-                                className="w-full appearance-none bg-none bg-white border border-burgundy/20 text-charcoal text-[10px] md:text-[11px] uppercase tracking-widest font-bold py-3 pl-3 pr-8 focus:ring-1 focus:ring-burgundy focus:border-burgundy cursor-pointer outline-none transition-colors hover:border-burgundy shadow-sm"
+                                // bg-transparent permet à la case de prendre la couleur crème du site
+                                className="w-full appearance-none bg-none bg-transparent border border-burgundy/20 text-charcoal text-[10px] md:text-[11px] uppercase tracking-widest font-bold py-3 pl-3 pr-8 focus:ring-1 focus:ring-burgundy focus:border-burgundy cursor-pointer outline-none transition-colors hover:border-burgundy"
                             >
                                 <option value="tous">Toutes les catégories</option>
                                 <option value="non voilée">Non Voilées</option>
@@ -120,7 +122,8 @@ export default function Products({ products, currentCategory, currentSize, avail
                             <select 
                                 value={currentSize || ''} 
                                 onChange={(e) => handleFilterChange('size', e.target.value)}
-                                className="w-full appearance-none bg-none bg-white border border-burgundy/20 text-charcoal text-[10px] md:text-[11px] uppercase tracking-widest font-bold py-3 pl-3 pr-8 focus:ring-1 focus:ring-burgundy focus:border-burgundy cursor-pointer outline-none transition-colors hover:border-burgundy shadow-sm"
+                                // bg-transparent appliqué ici aussi
+                                className="w-full appearance-none bg-none bg-transparent border border-burgundy/20 text-charcoal text-[10px] md:text-[11px] uppercase tracking-widest font-bold py-3 pl-3 pr-8 focus:ring-1 focus:ring-burgundy focus:border-burgundy cursor-pointer outline-none transition-colors hover:border-burgundy"
                             >
                                 <option value="">Toutes les tailles</option>
                                 {availableSizes.map(size => (
@@ -134,10 +137,11 @@ export default function Products({ products, currentCategory, currentSize, avail
 
                     </div>
 
-                    <div className="w-full md:w-auto border-t md:border-t-0 border-burgundy/10 pt-3 md:pt-0">
-                        <div className="text-[10px] md:text-xs uppercase tracking-widest font-bold text-charcoal bg-white px-4 py-2.5 border border-burgundy/10 shadow-sm text-center">
+                    {/* Compteur de résultats épuré (plus de boîte blanche autour) */}
+                    <div className="w-full md:w-auto flex justify-center md:justify-end mt-2 md:mt-0">
+                        <span className="text-[10px] md:text-xs uppercase tracking-widest font-bold text-charcoal/60">
                             {products.total} Modèle{products.total > 1 ? 's' : ''}
-                        </div>
+                        </span>
                     </div>
 
                 </div>
@@ -229,7 +233,7 @@ export default function Products({ products, currentCategory, currentSize, avail
                                             ? 'bg-burgundy text-cream shadow-sm'
                                             : !link.url
                                                 ? 'text-charcoal/30 cursor-not-allowed'
-                                                : 'text-charcoal hover:bg-burgundy/5 border border-transparent hover:border-burgundy/20 bg-[#F9F8F6]'
+                                                : 'text-charcoal hover:bg-burgundy/5 border border-transparent hover:border-burgundy/20 bg-transparent'
                                         }`}
                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                     preserveScroll
@@ -249,10 +253,8 @@ export default function Products({ products, currentCategory, currentSize, avail
                 >
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-burgundy/10">
                         
-                        {/* Bloc 1 */}
                         <div className="flex flex-col items-center justify-center relative group py-8 md:py-4">
-                            {/* z-0 au lieu de -z-10, opacité augmentée à 5% et 10% au hover */}
-                            <div className="absolute inset-0 flex items-center justify-center text-burgundy opacity-5 group-hover:opacity-10 transition-opacity duration-700 transform scale-[2.5] z-0">
+                            <div className="absolute inset-0 flex items-center justify-center text-burgundy opacity-10 group-hover:opacity-20 transition-opacity duration-700 transform scale-[2.5] z-0">
                                 <ShoppingBag size={100} strokeWidth={1} />
                             </div>
                             <div className="relative z-10 flex flex-col items-center">
@@ -263,9 +265,8 @@ export default function Products({ products, currentCategory, currentSize, avail
                             </div>
                         </div>
 
-                        {/* Bloc 2 */}
                         <div className="flex flex-col items-center justify-center relative group py-8 md:py-4">
-                            <div className="absolute inset-0 flex items-center justify-center text-burgundy opacity-5 group-hover:opacity-10 transition-opacity duration-700 transform scale-[2.5] z-0">
+                            <div className="absolute inset-0 flex items-center justify-center text-burgundy opacity-10 group-hover:opacity-20 transition-opacity duration-700 transform scale-[2.5] z-0">
                                 <Heart size={100} strokeWidth={1} />
                             </div>
                             <div className="relative z-10 flex flex-col items-center">
@@ -276,9 +277,8 @@ export default function Products({ products, currentCategory, currentSize, avail
                             </div>
                         </div>
 
-                        {/* Bloc 3 */}
                         <div className="flex flex-col items-center justify-center relative group py-8 md:py-4">
-                            <div className="absolute inset-0 flex items-center justify-center text-burgundy opacity-5 group-hover:opacity-10 transition-opacity duration-700 transform scale-[2.5] z-0">
+                            <div className="absolute inset-0 flex items-center justify-center text-burgundy opacity-10 group-hover:opacity-20 transition-opacity duration-700 transform scale-[2.5] z-0">
                                 <Award size={100} strokeWidth={1} />
                             </div>
                             <div className="relative z-10 flex flex-col items-center">

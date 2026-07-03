@@ -41,10 +41,9 @@ class ProductController extends Controller
         }
 
         // NOUVEAU : Filtre par taille (avec vérification du stock)
-        if ($sizeFilter) {
+       if ($sizeFilter) {
             $query->whereHas('sizes', function ($q) use ($sizeFilter) {
-                $q->where('sizes.name', $sizeFilter)
-                  ->where('product_size.stock_quantity', '>', 0);
+                $q->whereRaw('LOWER(sizes.name) = ?', [strtolower($sizeFilter)]);
             });
         }
 
