@@ -47,6 +47,7 @@ const ProductBadge = ({ tag, discount }) => {
 
 export default function ProductShow({ product, recommendations }) {
     const [selectedSize, setSelectedSize] = useState(null);
+    const [quantity, setQuantity] = useState(1); // NOUVEAU : État pour la quantité
     const [mainImage, setMainImage] = useState(product.images[0]?.src);
     const [isWishlisted, setIsWishlisted] = useState(false);
     const [cartOpen, setCartOpen] = useState(false);
@@ -61,7 +62,7 @@ export default function ProductShow({ product, recommendations }) {
         router.post(route('cart.add'), {
             product_id: product.id,
             size: selectedSize,
-            quantity: 1,
+            quantity: quantity, // NOUVEAU : Envoi de la quantité choisie
         }, {
             preserveScroll: true,
             onSuccess: () => {
@@ -69,10 +70,12 @@ export default function ProductShow({ product, recommendations }) {
                 setToast(true);
                 setTimeout(() => setToast(false), 3000);
                 setCartOpen(true);
+                // Réinitialiser la quantité après ajout (optionnel, mais propre)
+                setQuantity(1); 
 
                 window.trackMetaEvent('add_to_cart', {
                     product_id: product.id,
-                    quantity: 1,
+                    quantity: quantity,
                     price: parseFloat(product.price),
                 });
             },
@@ -333,7 +336,7 @@ export default function ProductShow({ product, recommendations }) {
                             </p>
 
                             {/* Sélecteur de Tailles */}
-                            <div className="mb-10">
+                            <div className="mb-8">
                                 <div className="flex justify-between items-end mb-4">
                                     <h3 className="font-bold text-[11px] uppercase tracking-widest text-charcoal">Sélectionnez la taille</h3>
                                     <a href={route('guide-tailles')} className="text-[10px] uppercase tracking-widest text-burgundy border-b border-burgundy/30 hover:border-burgundy transition-colors pb-0.5">
@@ -357,20 +360,41 @@ export default function ProductShow({ product, recommendations }) {
                                 </div>
                             </div>
 
-                            {/* Bouton Ajout Panier */}
-                            <button
-                                onClick={handleAddToCart}
-                                disabled={!selectedSize || processing}
-                                className={`w-full py-4.5 flex items-center justify-center gap-3 text-xs uppercase tracking-[0.2em] font-bold transition-all duration-300 shadow-lg ${
-                                    selectedSize
-                                        ? 'bg-burgundy text-cream hover:bg-charcoal hover:shadow-xl'
-                                        : 'bg-[#F9F8F6] border border-burgundy/10 text-charcoal/40 cursor-not-allowed'
-                                }`}
-                                style={{ paddingTop: '1.125rem', paddingBottom: '1.125rem' }} // Forçage de la hauteur pour l'élégance
-                            >
-                                <ShoppingBag size={18} />
-                                {processing ? 'Ajout en cours...' : selectedSize ? 'Ajouter au panier' : 'Sélectionner une taille'}
-                            </button>
+                            {/* ACTIONS : Quantité + Ajouter au Panier (Alignés) */}
+                            <div className="flex items-center gap-3 mb-10 h-[54px]">
+                                
+                                {/* Sélecteur de Quantité */}
+                                <div className="flex items-center justify-between border border-burgundy/20 bg-white w-28 h-full shrink-0">
+                                    <button 
+                                        onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                                        className="w-10 h-full flex items-center justify-center text-charcoal/40 hover:text-burgundy transition-colors"
+                                    >
+                                        <Minus size={14} />
+                                    </button>
+                                    <span className="text-xs font-bold text-charcoal">{quantity}</span>
+                                    <button 
+                                        onClick={() => setQuantity(q => Math.min(10, q + 1))}
+                                        className="w-10 h-full flex items-center justify-center text-charcoal/40 hover:text-burgundy transition-colors"
+                                    >
+                                        <Plus size={14} />
+                                    </button>
+                                </div>
+
+                                {/* Bouton Ajouter */}
+                                <button
+                                    onClick={handleAddToCart}
+                                    disabled={!selectedSize || processing}
+                                    className={`flex-1 h-full flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.2em] font-bold transition-all duration-300 shadow-lg ${
+                                        selectedSize
+                                            ? 'bg-burgundy text-cream hover:bg-charcoal hover:shadow-xl'
+                                            : 'bg-[#F9F8F6] border border-burgundy/10 text-charcoal/40 cursor-not-allowed'
+                                    }`}
+                                >
+                                    <ShoppingBag size={18} />
+                                    {processing ? 'Ajout en cours...' : selectedSize ? 'Ajouter au panier' : 'Sélectionner la taille'}
+                                </button>
+                                
+                            </div>
 
                             {/* Avantages Spécifiques Produits (Grille 2x2 élégante) */}
                             <div className="grid grid-cols-2 gap-x-4 gap-y-6 mt-12 pt-8 border-t border-burgundy/10">

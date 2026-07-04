@@ -9,7 +9,7 @@ use App\Models\Order;
 class OrderController extends Controller
 {
     const DELIVERY_FEE      = 8.00;
-    const FREE_DELIVERY_MIN = 200.00;
+    const FREE_DELIVERY_MIN = 300.00;
 
     /** Calculates delivery fee based on subtotal */
     private function deliveryFee(float $subtotal): float
@@ -25,7 +25,7 @@ class OrderController extends Controller
             return redirect()->route('cart')->with('error', 'Votre panier est vide.');
         }
 
-        $subtotal = collect($cart)->sum(fn ($item) => $item['price'] * $item['quantity']);
+        $subtotal = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
         $delivery = $this->deliveryFee($subtotal);
         $total    = $subtotal + $delivery;
 
@@ -54,7 +54,7 @@ class OrderController extends Controller
             return redirect()->route('cart')->with('error', 'Votre panier est vide.');
         }
 
-        $subtotal = collect($cart)->sum(fn ($item) => $item['price'] * $item['quantity']);
+        $subtotal = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
         $delivery = $this->deliveryFee($subtotal);
         $total    = $subtotal + $delivery;
 
@@ -80,19 +80,19 @@ class OrderController extends Controller
         session()->forget('cart');
 
         return Inertia::render('OrderConfirmation', [
-    'order' => [
-        'id'            => $order->id,
-        'customer_name' => $order->customer_name,
-        'subtotal'      => $subtotal,
-        'deliveryFee'   => $delivery,
-        'total_price'   => $order->total_price,
-        'status'        => $order->status,
-        'items'         => $order->items->map(fn($item) => [
-            'product_id' => $item->product_id,
-            'quantity'   => $item->quantity,
-            'price'      => $item->product_price,
-        ])->values(),
-    ],
-]);
+            'order' => [
+                'id'            => $order->id,
+                'customer_name' => $order->customer_name,
+                'subtotal'      => $subtotal,
+                'deliveryFee'   => $delivery,
+                'total_price'   => $order->total_price,
+                'status'        => $order->status,
+                'items'         => $order->items->map(fn($item) => [
+                    'product_id' => $item->product_id,
+                    'quantity'   => $item->quantity,
+                    'price'      => $item->product_price,
+                ])->values(),
+            ],
+        ]);
     }
 }

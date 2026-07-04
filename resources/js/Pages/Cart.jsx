@@ -2,7 +2,7 @@ import { Link, useForm, router } from "@inertiajs/react";
 import MainLayout from "@/Layouts/MainLayout";
 
 const DELIVERY_FEE      = 8;
-const FREE_DELIVERY_MIN = 200;
+const FREE_DELIVERY_MIN = 300;
 
 export default function Cart({ cart }) {
     const items    = Object.values(cart);
