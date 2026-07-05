@@ -10,7 +10,7 @@ class ProductController extends Controller
 {
     public function home()
     {
-        // Récupère les produits qui ont "front_page" activé (limité à 4 pour le design)
+        // Récupère les produits qui ont "front_page" activé
         $trendingProducts = Product::with(['images', 'category'])
             ->where('is_active', true)
             ->where('front_page', true)
@@ -27,7 +27,7 @@ class ProductController extends Controller
     public function products(Request $request)
     {
         $categoryName = $request->query('category', 'tous');
-        $sizeFilter = $request->query('size'); // Nouveau paramètre
+        $sizeFilter = $request->query('size'); 
 
         $query = Product::with(['category', 'images'])
             ->orderBy('sort_order', 'asc')
@@ -38,9 +38,14 @@ class ProductController extends Controller
             $query->whereHas('category', function ($q) use ($categoryName) {
                 $q->whereRaw('LOWER(name) = ?', [strtolower($categoryName)]);
             });
+        } else {
+            // SI "tous", on EXCLUT explicitement la catégorie "chemises" pour n'avoir que les maillots
+            $query->whereHas('category', function ($q) {
+                $q->whereRaw('LOWER(name) != ?', ['chemises']);
+            });
         }
 
-        // NOUVEAU : Filtre par taille (avec vérification du stock)
+        // Filtre par taille
         if ($sizeFilter) {
             $query->whereHas('sizes', function ($q) use ($sizeFilter) {
                 $q->whereRaw('LOWER(sizes.name) = ?', [strtolower($sizeFilter)]);
@@ -48,20 +53,22 @@ class ProductController extends Controller
         }
 
         $products = $query->paginate(12)
-            ->withQueryString() // Garde les paramètres category et size dans la pagination
+            ->withQueryString() 
             ->through(fn($p) => $this->formatProduct($p));
 
-        // NOUVEAU : Récupérer toutes les tailles uniques pour le menu déroulant
-        // On ne récupère que les tailles liées à des produits actifs
+        // Récupérer toutes les tailles uniques (Sauf celles des chemises)
         $availableSizes = \App\Models\Size::whereHas('products', function ($q) {
-            $q->where('is_active', true);
+            $q->where('is_active', true)
+              ->whereHas('category', function ($c) {
+                  $c->whereRaw('LOWER(name) != ?', ['chemises']);
+              });
         })->orderBy('name')->pluck('name');
 
         return Inertia::render('Products', [
             'products'        => $products,
             'currentCategory' => $categoryName,
-            'currentSize'     => $sizeFilter,     // On passe la taille actuelle à React
-            'availableSizes'  => $availableSizes, // On passe la liste des tailles
+            'currentSize'     => $sizeFilter,     
+            'availableSizes'  => $availableSizes, 
         ]);
     }
 
@@ -73,7 +80,8 @@ class ProductController extends Controller
             ->orderBy('sort_order', 'asc')
             ->where('is_active', true)
             ->whereHas('category', function ($q) {
-                $q->whereRaw('LOWER(name) = ?', ['chemise']); // On ne force que la catégorie Chemise
+                // ICI ON FORCE LA RECHERCHE SUR LE MOT EXACT : chemises
+                $q->whereRaw('LOWER(name) = ?', ['chemises']); 
             });
 
         // Filtre par taille
@@ -91,7 +99,7 @@ class ProductController extends Controller
         $availableSizes = \App\Models\Size::whereHas('products', function($q) {
             $q->where('is_active', true)
               ->whereHas('category', function ($c) {
-                  $c->whereRaw('LOWER(name) = ?', ['chemise']);
+                  $c->whereRaw('LOWER(name) = ?', ['chemises']);
               });
         })->orderBy('name')->pluck('name');
 
@@ -109,9 +117,12 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $product = Product::with(['category', 'images', 'sizes'])->findOrFail($id);
+        // On s'assure de ne charger le produit QUE s'il est actif
+        $product = Product::with(['category', 'images', 'sizes'])
+            ->where('is_active', true)
+            ->findOrFail($id);
 
-        // Build images array — prefer Spatie, fall back to legacy
+        // Build images array
         $spatieImages = $product->getMedia('images');
 
         if ($spatieImages->isNotEmpty()) {
@@ -151,19 +162,17 @@ class ProductController extends Controller
 
     private function formatProduct(Product $product): array
     {
-        // Try Spatie media first, fall back to legacy ProductImage
         $mediaItem = $product->getFirstMedia('images');
 
         if ($mediaItem) {
             $imageData = [
-                'image'  => $mediaItem->getUrl('thumb'),   // WebP 400px — default src
+                'image'  => $mediaItem->getUrl('thumb'),
                 'srcset' => implode(', ', [
                     $mediaItem->getUrl('thumb')  . ' 400w',
                     $mediaItem->getUrl('full')   . ' 800w',
                 ]),
             ];
         } else {
-            // Legacy fallback while you migrate
             $legacyImage = $product->images->first();
             $imageUrl = $legacyImage
                 ? '/storage/' . $legacyImage->image_path
