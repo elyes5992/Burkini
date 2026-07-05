@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, router } from '@inertiajs/react';
 import { 
     Flame, Star, Sparkles, Tag, SlidersHorizontal, 
-    Droplets, Wind, Feather, RefreshCw, 
-    ShoppingBag, Heart, Award 
+    Wind, Feather, Award, CheckCircle,
+    ShoppingBag, Heart
 } from 'lucide-react';
 
 const ProductBadge = ({ tag, discount }) => {
@@ -42,12 +42,11 @@ const ProductBadge = ({ tag, discount }) => {
     );
 };
 
-export default function Products({ products, currentCategory, currentSize, availableSizes }) {
+export default function Chemises({ products, currentSize, availableSizes }) {
 
-    const handleFilterChange = (filterType, value) => {
-        router.get(route('products'), {
-            category: filterType === 'category' ? value : currentCategory,
-            size: filterType === 'size' ? (value || undefined) : currentSize
+    const handleFilterChange = (value) => {
+        router.get(route('chemises'), {
+            size: value || undefined
         }, { 
             preserveState: true, 
             preserveScroll: true 
@@ -61,22 +60,32 @@ export default function Products({ products, currentCategory, currentSize, avail
                 {/* --- HEADER: Titre --- */}
                 <div className="text-center mb-10">
                     <h1 className="text-4xl md:text-5xl font-dream text-charcoal tracking-wide capitalize mb-6">
-                        {currentCategory === 'tous' ? 'Collection Maillots' : `Collection ${currentCategory}`}
+                        Collection Chemises
                     </h1>
-                    <div className="flex justify-center items-center gap-4 mt-4">
+                    <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="max-w-2xl mx-auto"
+                    >
+                        <p className="text-charcoal/70 font-serif text-sm md:text-base leading-relaxed italic">
+                            "L'élégance au quotidien. Découvrez notre collection de chemises fluides et raffinées, parfaites pour compléter votre tenue avec légèreté."
+                        </p>
+                    </motion.div>
+                    <div className="flex justify-center items-center gap-4 mt-8">
                         <span className="h-[1px] w-12 bg-burgundy/20"></span>
                         <span className="w-1.5 h-1.5 rounded-full bg-burgundy/40"></span>
                         <span className="h-[1px] w-12 bg-burgundy/20"></span>
                     </div>
                 </div>
 
-                {/* --- AVANTAGES PRODUITS --- */}
+                {/* --- AVANTAGES SPÉCIFIQUES CHEMISES --- */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-12 max-w-5xl mx-auto">
                     {[
-                        { icon: <Droplets size={20} strokeWidth={1.5} />, text: "Tissu polyamide spécial maillot" },
-                        { icon: <Wind size={20} strokeWidth={1.5} />, text: "Séchage ultra-rapide" },
-                        { icon: <Feather size={20} strokeWidth={1.5} />, text: "Ne colle pas au corps" },
-                        { icon: <RefreshCw size={20} strokeWidth={1.5} />, text: "Possibilité d'échange" }
+                        { icon: <Wind size={20} strokeWidth={1.5} />, text: "Tissu fluide et respirant" },
+                        { icon: <Star size={20} strokeWidth={1.5} />, text: "Coupe élégante & moderne" },
+                        { icon: <Feather size={20} strokeWidth={1.5} />, text: "Confort absolu" },
+                        { icon: <Award size={20} strokeWidth={1.5} />, text: "Finitions premium" }
                     ].map((item, idx) => (
                         <motion.div 
                             key={idx}
@@ -93,35 +102,15 @@ export default function Products({ products, currentCategory, currentSize, avail
                     ))}
                 </div>
 
-                {/* --- BARRE DE FILTRES ULTRA MINIMALISTE --- */}
+                {/* --- BARRE DE FILTRE (Uniquement Taille) --- */}
                 <div className="mb-12 flex flex-col md:flex-row justify-between items-center gap-6 w-full">
                     
                     <div className="flex flex-row gap-3 w-full md:w-auto">
-                        
-                        {/* Dropdown Catégorie */}
+                        {/* Dropdown Taille Uniquement */}
                         <div className="relative flex-1 md:w-56">
                             <select 
-                                value={currentCategory} 
-                                onChange={(e) => handleFilterChange('category', e.target.value)}
-                                className="w-full appearance-none bg-none bg-transparent border border-burgundy/20 text-charcoal text-[10px] md:text-[11px] uppercase tracking-widest font-bold py-3 pl-3 pr-8 focus:ring-1 focus:ring-burgundy focus:border-burgundy cursor-pointer outline-none transition-colors hover:border-burgundy"
-                            >
-                                <option value="tous">Toutes les catégories</option>
-                                {/* NOUVELLE OPTION CHEMISES AJOUTÉE ICI */}
-                                {/* <option value="chemise">Chemises</option> */}
-                                <option value="non voilée">Non Voilées</option>
-                                <option value="voilée">Voilées</option>
-                                <option value="enfant">Enfants</option>
-                            </select>
-                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 md:px-3 text-burgundy">
-                                <svg className="fill-current h-3 w-3" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                            </div>
-                        </div>
-
-                        {/* Dropdown Taille */}
-                        <div className="relative flex-1 md:w-48">
-                            <select 
                                 value={currentSize || ''} 
-                                onChange={(e) => handleFilterChange('size', e.target.value)}
+                                onChange={(e) => handleFilterChange(e.target.value)}
                                 className="w-full appearance-none bg-none bg-transparent border border-burgundy/20 text-charcoal text-[10px] md:text-[11px] uppercase tracking-widest font-bold py-3 pl-3 pr-8 focus:ring-1 focus:ring-burgundy focus:border-burgundy cursor-pointer outline-none transition-colors hover:border-burgundy"
                             >
                                 <option value="">Toutes les tailles</option>
@@ -133,10 +122,9 @@ export default function Products({ products, currentCategory, currentSize, avail
                                 <svg className="fill-current h-3 w-3" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
                             </div>
                         </div>
-
                     </div>
 
-                    {/* Compteur de résultats épuré */}
+                    {/* Compteur de résultats */}
                     <div className="w-full md:w-auto flex justify-center md:justify-end mt-2 md:mt-0">
                         <span className="text-[10px] md:text-xs uppercase tracking-widest font-bold text-charcoal/60">
                             {products.total} Modèle{products.total > 1 ? 's' : ''}
@@ -208,13 +196,13 @@ export default function Products({ products, currentCategory, currentSize, avail
                             <SlidersHorizontal size={40} className="text-burgundy/40 mb-4" />
                             <h3 className="text-xl font-dream text-charcoal mb-2">Aucun modèle disponible</h3>
                             <p className="text-charcoal/60 font-serif max-w-md">
-                                Nous n'avons pas trouvé de modèles correspondant à ces critères. Essayez de modifier la catégorie ou la taille.
+                                Nous n'avons pas trouvé de chemises correspondant à cette taille.
                             </p>
                             <button 
-                                onClick={() => router.get(route('products'))}
+                                onClick={() => router.get(route('chemises'))}
                                 className="mt-6 bg-burgundy text-cream px-6 py-3 text-[10px] uppercase font-bold tracking-widest hover:bg-charcoal transition-colors shadow-md"
                             >
-                                Voir toute la collection
+                                Voir toutes les chemises
                             </button>
                         </div>
                     )}
@@ -251,43 +239,33 @@ export default function Products({ products, currentCategory, currentSize, avail
                     className="mt-24 mb-8 pt-16 border-t border-burgundy/10 overflow-hidden"
                 >
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-burgundy/10">
-                        
                         <div className="flex flex-col items-center justify-center relative group py-8 md:py-4">
                             <div className="absolute inset-0 flex items-center justify-center text-burgundy opacity-10 group-hover:opacity-20 transition-opacity duration-700 transform scale-[2.5] z-0">
                                 <ShoppingBag size={100} strokeWidth={1} />
                             </div>
                             <div className="relative z-10 flex flex-col items-center">
                                 <span className="text-6xl md:text-7xl font-dream text-burgundy mb-2 tracking-tighter">+3k</span>
-                                <span className="text-[11px] md:text-xs uppercase tracking-[0.2em] font-bold text-charcoal/80">
-                                    Unités Vendues
-                                </span>
+                                <span className="text-[11px] md:text-xs uppercase tracking-[0.2em] font-bold text-charcoal/80">Unités Vendues</span>
                             </div>
                         </div>
-
                         <div className="flex flex-col items-center justify-center relative group py-8 md:py-4">
                             <div className="absolute inset-0 flex items-center justify-center text-burgundy opacity-10 group-hover:opacity-20 transition-opacity duration-700 transform scale-[2.5] z-0">
                                 <Heart size={100} strokeWidth={1} />
                             </div>
                             <div className="relative z-10 flex flex-col items-center">
                                 <span className="text-6xl md:text-7xl font-dream text-burgundy mb-2 tracking-tighter">98%</span>
-                                <span className="text-[11px] md:text-xs uppercase tracking-[0.2em] font-bold text-charcoal/80">
-                                    Clientes Satisfaites
-                                </span>
+                                <span className="text-[11px] md:text-xs uppercase tracking-[0.2em] font-bold text-charcoal/80">Clientes Satisfaites</span>
                             </div>
                         </div>
-
                         <div className="flex flex-col items-center justify-center relative group py-8 md:py-4">
                             <div className="absolute inset-0 flex items-center justify-center text-burgundy opacity-10 group-hover:opacity-20 transition-opacity duration-700 transform scale-[2.5] z-0">
                                 <Award size={100} strokeWidth={1} />
                             </div>
                             <div className="relative z-10 flex flex-col items-center">
                                 <span className="text-6xl md:text-7xl font-dream text-burgundy mb-2 tracking-tighter">5 Ans</span>
-                                <span className="text-[11px] md:text-xs uppercase tracking-[0.2em] font-bold text-charcoal/80">
-                                    D'Expertise Mode
-                                </span>
+                                <span className="text-[11px] md:text-xs uppercase tracking-[0.2em] font-bold text-charcoal/80">D'Expertise Mode</span>
                             </div>
                         </div>
-
                     </div>
                 </motion.div>
 

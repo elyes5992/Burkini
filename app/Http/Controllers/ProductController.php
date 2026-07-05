@@ -24,7 +24,7 @@ class ProductController extends Controller
         ]);
     }
 
-   public function products(Request $request)
+    public function products(Request $request)
     {
         $categoryName = $request->query('category', 'tous');
         $sizeFilter = $request->query('size'); // Nouveau paramètre
@@ -41,7 +41,7 @@ class ProductController extends Controller
         }
 
         // NOUVEAU : Filtre par taille (avec vérification du stock)
-       if ($sizeFilter) {
+        if ($sizeFilter) {
             $query->whereHas('sizes', function ($q) use ($sizeFilter) {
                 $q->whereRaw('LOWER(sizes.name) = ?', [strtolower($sizeFilter)]);
             });
@@ -53,7 +53,7 @@ class ProductController extends Controller
 
         // NOUVEAU : Récupérer toutes les tailles uniques pour le menu déroulant
         // On ne récupère que les tailles liées à des produits actifs
-        $availableSizes = \App\Models\Size::whereHas('products', function($q) {
+        $availableSizes = \App\Models\Size::whereHas('products', function ($q) {
             $q->where('is_active', true);
         })->orderBy('name')->pluck('name');
 
@@ -62,6 +62,43 @@ class ProductController extends Controller
             'currentCategory' => $categoryName,
             'currentSize'     => $sizeFilter,     // On passe la taille actuelle à React
             'availableSizes'  => $availableSizes, // On passe la liste des tailles
+        ]);
+    }
+
+    public function chemises(Request $request)
+    {
+        $sizeFilter = $request->query('size');
+
+        $query = Product::with(['category', 'images'])
+            ->orderBy('sort_order', 'asc')
+            ->where('is_active', true)
+            ->whereHas('category', function ($q) {
+                $q->whereRaw('LOWER(name) = ?', ['chemise']); // On ne force que la catégorie Chemise
+            });
+
+        // Filtre par taille
+        if ($sizeFilter) {
+            $query->whereHas('sizes', function ($q) use ($sizeFilter) {
+                $q->whereRaw('LOWER(sizes.name) = ?', [strtolower($sizeFilter)]);
+            });
+        }
+
+        $products = $query->paginate(12)
+            ->withQueryString()
+            ->through(fn($p) => $this->formatProduct($p));
+
+        // Tailles disponibles uniquement pour les chemises
+        $availableSizes = \App\Models\Size::whereHas('products', function($q) {
+            $q->where('is_active', true)
+              ->whereHas('category', function ($c) {
+                  $c->whereRaw('LOWER(name) = ?', ['chemise']);
+              });
+        })->orderBy('name')->pluck('name');
+
+        return Inertia::render('Chemises', [
+            'products'       => $products,
+            'currentSize'    => $sizeFilter,
+            'availableSizes' => $availableSizes,
         ]);
     }
 

@@ -5,7 +5,6 @@ import { Sun, Droplet, ShieldCheck } from 'lucide-react';
 
 export default function Home({ trendingProducts = [] }) {
    
-
     return (
         <MainLayout>
             {/* Hero Section */}
@@ -19,10 +18,10 @@ export default function Home({ trendingProducts = [] }) {
                     <img 
                         src="/image/hero25.jpg" 
                         alt="Vellure Nouvelle Collection" 
+                        loading="eager" 
                         className="w-full h-full object-cover object-top"
                     />
                 </motion.div>
-                {/* Elegant dark overlay */}
                 <div className="absolute inset-0 bg-charcoal/30"></div>
                 
                 <motion.div 
@@ -45,7 +44,7 @@ export default function Home({ trendingProducts = [] }) {
                 </motion.div>
             </section>
 
-            {/* Categories Section - UPDATED WITH MOBILE SLIDER */}
+            {/* Categories Section - 4 Catégories, Grid 2x2 Mobile, 4x1 Desktop */}
            <section className="py-24 px-4 max-w-7xl mx-auto bg-cream overflow-hidden">
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
@@ -58,47 +57,46 @@ export default function Home({ trendingProducts = [] }) {
                     <div className="w-16 h-[1px] bg-burgundy mx-auto"></div>
                 </motion.div>
 
-                {/* Container: Changed mobile gap to gap-5 for better breathing room */}
-                <div className="flex md:grid md:grid-cols-3 gap-5 md:gap-10 overflow-x-auto snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0 pb-8 md:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
                     {[
                         { title: 'Non Voilée', img: '/image/cat-nonv.png', cat: 'non voilée' },
                         { title: 'Voilée', img: '/image/cat-v1.png', cat: 'voilée' },
+                        { title: 'Chemises', img: '/image/cat-chemise.jpg', cat: 'chemise' }, 
                         { title: 'Enfant', img: '/image/cat-e.jpg', cat: 'enfant' }
                     ].map((item, index) => (
                         <Link 
-                            href={route('products', { category: item.cat })} 
+                            href={item.cat === 'chemise' ? route('chemises') : route('products', { category: item.cat })} 
                             key={index}
-                            // CHANGED: w-[72vw] makes it narrower, revealing more of the next card to encourage swiping
-                            className="relative block w-[72vw] md:w-auto flex-shrink-0 snap-center group cursor-pointer"
+                            className="relative block group cursor-pointer"
                         >
                             <motion.div 
                                 initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
-                                transition={{ delay: index * 0.2, duration: 0.7 }}
-                                // CHANGED: h-[34rem] on mobile, h-[38rem] on desktop for elegant tall portrait aspect ratio
-                                className="relative h-[34rem] md:h-[38rem] overflow-hidden rounded-2xl md:rounded-none shadow-lg md:shadow-none"
+                                transition={{ delay: index * 0.1, duration: 0.6 }}
+                                className="relative aspect-[4/5] overflow-hidden rounded-xl md:rounded-none shadow-sm md:shadow-none"
                             >
-                                {/* Image */}
-                                <img src={item.img} alt={item.title} className="w-full h-full object-cover transition duration-1000 md:group-hover:scale-110" />
+                                <img 
+                                    src={item.img} 
+                                    alt={item.title} 
+                                    loading="lazy"
+                                    decoding="async"
+                                    className="w-full h-full object-cover transition duration-1000 md:group-hover:scale-110" 
+                                />
                                 
-                                {/* Burgundy Gradient Overlay - Adjusted slightly for the taller height */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-[#7e0220]/95 via-[#7e0220]/30 to-transparent opacity-100 md:opacity-80 md:group-hover:opacity-100 transition-opacity duration-500"></div>
+                                {/* DÉGRADÉ RESTAURÉ : Du bordeaux foncé en bas vers transparent en haut */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#7e0220]/95 via-[#7e0220]/30 to-transparent opacity-90 md:opacity-80 md:group-hover:opacity-100 transition-opacity duration-500"></div>
                                 
-                                {/* Content Container */}
-                                <div className="absolute inset-0 flex items-end justify-center pb-12 z-10">
-                                    <div className="text-center transform translate-y-0 md:translate-y-4 md:group-hover:translate-y-0 transition-transform duration-500 ease-out">
+                                <div className="absolute inset-0 flex items-end justify-center pb-6 md:pb-10 z-10">
+                                    <div className="text-center transform translate-y-0 md:translate-y-2 md:group-hover:translate-y-0 transition-transform duration-500 ease-out px-2">
                                         
-                                        {/* Cream Text */}
-                                        <h3 className="text-[#f4e8ce] text-3xl font-dream mb-2 tracking-wide drop-shadow-md">
+                                        <h3 className="text-[#f4e8ce] text-xl md:text-2xl font-dream mb-1 md:mb-2 tracking-wide drop-shadow-md">
                                             {item.title}
                                         </h3>
                                         
-                                        {/* Explorer link */}
-                                        <span className="text-[#f4e8ce] md:text-[#f4e8ce]/80 text-[10px] uppercase tracking-[0.25em] relative inline-block md:group-hover:text-[#f4e8ce] transition-all duration-300 opacity-100 md:opacity-0 md:group-hover:opacity-100 mt-1">
+                                        <span className="text-[#f4e8ce] md:text-[#f4e8ce]/80 text-[9px] md:text-[10px] uppercase tracking-[0.25em] relative inline-block transition-all duration-300 opacity-100 md:opacity-0 md:group-hover:opacity-100 mt-1">
                                             Explorer
-                                            {/* Underline */}
-                                            <span className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-full md:w-0 h-[1px] bg-[#f4e8ce] transition-all duration-500 delay-100 md:group-hover:w-full"></span>
+                                            <span className="absolute -bottom-1.5 left-1/2 transform -translate-x-1/2 w-8 md:w-0 h-[1px] bg-[#f4e8ce] transition-all duration-500 delay-100 md:group-hover:w-full"></span>
                                         </span>
 
                                     </div>
@@ -116,20 +114,18 @@ export default function Home({ trendingProducts = [] }) {
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="flex flex-col md:flex-row justify-between items-end mb-14"
+                        // TITRE CENTRÉ : flex-col et items-center au lieu de justify-between items-end
+                        className="flex flex-col items-center text-center mb-14"
                     >
-                        <div>
-                            <h2 className="text-4xl md:text-5xl font-dream text-charcoal mb-4">Pièces Maîtresses</h2>
-                            <div className="w-16 h-[1px] bg-burgundy"></div>
-                        </div>
+                        <h2 className="text-4xl md:text-5xl font-dream text-charcoal mb-4">Pièces Maîtresses</h2>
+                        <div className="w-16 h-[1px] bg-burgundy mb-6"></div>
                         <Link href={route('products')} className="text-burgundy text-[11px] font-bold uppercase tracking-[0.2em] hover:text-charcoal transition hidden md:inline-block relative group">
                             Voir le vestiaire
                             <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-charcoal transition-all duration-300 group-hover:w-full"></span>
                         </Link>
                     </motion.div>
 
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
-                        {/* ICI NOUS UTILISONS LES DONNEES DE LA BASE DE DONNEES */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 md:gap-x-6 gap-y-10 md:gap-y-12">
                         {trendingProducts.length > 0 ? trendingProducts.map((product, index) => (
                             <motion.div 
                                 key={product.id}
@@ -139,38 +135,41 @@ export default function Home({ trendingProducts = [] }) {
                                 transition={{ delay: index * 0.1 }}
                                 className="group cursor-pointer text-center"
                             >
-                                <div className="relative aspect-[3/4] overflow-hidden mb-6 bg-cream/30">
-                                    {/* CHANGEMENT DE product.img à product.image */}
+                                <div className="relative aspect-[3/4] overflow-hidden mb-5 bg-[#F9F8F6]">
                                     <Link href={route('product.show', product.id)}>
-                                        <img src={product.image} alt={product.name} className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-700" />
+                                        <img 
+                                            src={product.image} 
+                                            alt={product.name} 
+                                            loading="lazy"
+                                            className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-700" 
+                                        />
                                     </Link>
                                     
-                                    {/* Exclusivité / Promo Tag dynamique depuis la BDD (Optionnel) */}
                                     {product.tag && (
-                                        <div className="absolute top-4 left-4 bg-burgundy text-cream text-[9px] uppercase tracking-widest font-bold px-4 py-1">
+                                        <div className="absolute top-3 left-3 bg-burgundy text-cream text-[9px] uppercase tracking-widest font-bold px-3 py-1 shadow-sm">
                                             {product.tag === 'nouveaute' ? 'Nouveauté' : product.tag === 'bestseller' ? 'Exclusivité' : product.tag}
                                         </div>
                                     )}
 
                                     <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out hidden md:block">
-                                        <Link href={route('product.show', product.id)} className="block bg-cream/95 text-burgundy w-full py-3 text-[10px] uppercase font-bold tracking-[0.1em] hover:bg-burgundy hover:text-cream transition-colors duration-300">
+                                        <Link href={route('product.show', product.id)} className="block bg-cream/95 text-burgundy w-full py-3 text-[10px] uppercase font-bold tracking-[0.1em] hover:bg-burgundy hover:text-cream transition-colors duration-300 shadow-lg">
                                             Aperçu Rapide
                                         </Link>
                                     </div>
                                 </div>
-                                <p className="text-charcoal/50 text-[10px] uppercase tracking-widest mb-2">{product.category}</p>
-                                <h3 className="text-sm font-medium text-charcoal mb-2 font-serif">{product.name}</h3>
-                                <p className="text-burgundy text-sm">{product.price} DT</p>
+                                <p className="text-charcoal/50 text-[9px] uppercase tracking-[0.2em] mb-1.5 font-bold">{product.category}</p>
+                                <h3 className="text-sm font-medium text-charcoal mb-1 font-serif">{product.name}</h3>
+                                <p className="text-burgundy text-sm font-bold">{parseFloat(product.price).toFixed(2)} DT</p>
                             </motion.div>
                         )) : (
-                            <div className="col-span-full text-center text-charcoal/50 py-10">
+                            <div className="col-span-full text-center text-charcoal/50 py-10 font-serif italic">
                                 Aucun produit épinglé pour le moment.
                             </div>
                         )}
                     </div>
                     
                     <div className="mt-16 text-center md:hidden">
-                        <Link href={route('products')} className="inline-block border border-burgundy text-burgundy px-10 py-3 text-[11px] font-bold uppercase tracking-[0.2em]">
+                        <Link href={route('products')} className="inline-block border border-burgundy text-burgundy px-10 py-3.5 text-[10px] font-bold uppercase tracking-[0.2em] shadow-sm">
                             Voir toute la collection
                         </Link>
                     </div>
@@ -189,7 +188,7 @@ export default function Home({ trendingProducts = [] }) {
                         className="w-full lg:w-1/2 relative"
                     >
                         <div className="relative aspect-[4/5] md:aspect-[3/4] overflow-hidden">
-                            <img src="/image/texture.png" alt="L'Exigence Vellure" className="w-full h-full object-cover" />
+                            <img src="/image/texture.png" alt="L'Exigence Vellure" loading="lazy" className="w-full h-full object-cover" />
                             <div className="absolute inset-0 border border-burgundy/20 m-6"></div>
                         </div>
                     </motion.div>
@@ -203,38 +202,38 @@ export default function Home({ trendingProducts = [] }) {
                     >
                         <span className="text-burgundy text-[10px] font-bold uppercase tracking-[0.3em] mb-4 block">Le Savoir-Faire</span>
                         <h2 className="text-4xl md:text-6xl font-dream mb-8 text-charcoal">L'Exigence Absolue</h2>
-                        <p className="text-charcoal/70 mb-12 text-lg font-light leading-relaxed">
+                        <p className="text-charcoal/70 mb-12 text-sm md:text-lg font-light leading-relaxed">
                             Chaque pièce de la collection Vellure est pensée pour sublimer la silhouette tout en respectant vos valeurs. Nous sélectionnons des étoffes nobles qui épousent vos mouvements avec grâce.
                         </p>
 
-                        <div className="space-y-10">
-                            <div className="flex items-start gap-6 group">
+                        <div className="space-y-8 md:space-y-10">
+                            <div className="flex items-start gap-4 md:gap-6 group">
                                 <div className="text-burgundy mt-1 group-hover:scale-110 transition duration-300">
-                                    <Droplet size={28} strokeWidth={1} />
+                                    <Droplet size={24} strokeWidth={1.5} className="md:w-7 md:h-7" />
                                 </div>
                                 <div>
-                                    <h4 className="text-lg font-dream tracking-wide text-charcoal mb-2">Tissé pour l'océan</h4>
-                                    <p className="text-charcoal/60 text-sm font-light leading-relaxed">Une technologie d'évacuation permettant un séchage instantané, pour une élégance ininterrompue hors de l'eau.</p>
+                                    <h4 className="text-base md:text-lg font-dream tracking-wide text-charcoal mb-1 md:mb-2">Tissé pour l'océan</h4>
+                                    <p className="text-charcoal/60 text-xs md:text-sm font-light leading-relaxed">Une technologie d'évacuation permettant un séchage instantané, pour une élégance ininterrompue hors de l'eau.</p>
                                 </div>
                             </div>
 
-                            <div className="flex items-start gap-6 group">
+                            <div className="flex items-start gap-4 md:gap-6 group">
                                 <div className="text-burgundy mt-1 group-hover:scale-110 transition duration-300">
-                                    <Sun size={28} strokeWidth={1} />
+                                    <Sun size={24} strokeWidth={1.5} className="md:w-7 md:h-7" />
                                 </div>
                                 <div>
-                                    <h4 className="text-lg font-dream tracking-wide text-charcoal mb-2">Bouclier Solaire</h4>
-                                    <p className="text-charcoal/60 text-sm font-light leading-relaxed">Une protection UPF 50+ intégrée au cœur des fibres, préservant votre peau des rayons nocifs avec légèreté.</p>
+                                    <h4 className="text-base md:text-lg font-dream tracking-wide text-charcoal mb-1 md:mb-2">Bouclier Solaire</h4>
+                                    <p className="text-charcoal/60 text-xs md:text-sm font-light leading-relaxed">Une protection UPF 50+ intégrée au cœur des fibres, préservant votre peau des rayons nocifs avec légèreté.</p>
                                 </div>
                             </div>
 
-                            <div className="flex items-start gap-6 group">
+                            <div className="flex items-start gap-4 md:gap-6 group">
                                 <div className="text-burgundy mt-1 group-hover:scale-110 transition duration-300">
-                                    <ShieldCheck size={28} strokeWidth={1} />
+                                    <ShieldCheck size={24} strokeWidth={1.5} className="md:w-7 md:h-7" />
                                 </div>
                                 <div>
-                                    <h4 className="text-lg font-dream tracking-wide text-charcoal mb-2">Opacité & Maintien</h4>
-                                    <p className="text-charcoal/60 text-sm font-light leading-relaxed">Un drapé fluide garantissant une opacité totale même mouillé, résistant au chlore et au sel marin avec brio.</p>
+                                    <h4 className="text-base md:text-lg font-dream tracking-wide text-charcoal mb-1 md:mb-2">Opacité & Maintien</h4>
+                                    <p className="text-charcoal/60 text-xs md:text-sm font-light leading-relaxed">Un drapé fluide garantissant une opacité totale même mouillé, résistant au chlore et au sel marin avec brio.</p>
                                 </div>
                             </div>
                         </div>

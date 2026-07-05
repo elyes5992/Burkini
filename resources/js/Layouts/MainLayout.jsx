@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, ShoppingBag, Mail, Phone } from 'lucide-react';
+import { Menu, X, ShoppingBag, Mail, Phone, ChevronDown } from 'lucide-react';
 import { FaInstagram, FaFacebookF } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, usePage } from '@inertiajs/react';
@@ -9,6 +9,9 @@ import WhatsAppButton from '@/Components/WhatsAppButton';
 export default function MainLayout({ children }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+
+    // État pour contrôler l'ouverture du sous-menu Maillots sur mobile.
+    const [isMaillotsOpen, setIsMaillotsOpen] = useState(true);
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -20,6 +23,7 @@ export default function MainLayout({ children }) {
     useEffect(() => {
         if (isMobileMenuOpen) {
             document.body.style.overflow = 'hidden';
+            setIsMaillotsOpen(true); // Ouvert par défaut
         } else {
             document.body.style.overflow = 'unset';
         }
@@ -27,17 +31,22 @@ export default function MainLayout({ children }) {
 
     const navLinks = [
         { name: 'Accueil', href: route('home') },
-        { name: 'Collection', href: route('products') },
-        { name: 'Non Voilée', href: route('products', { category: 'non voilée' }) },
-        { name: 'Voilée', href: route('products', { category: 'voilée' }) },
-        { name: 'Enfant', href: route('products', { category: 'enfant' }) },
+        { name: 'Chemises', href: route('chemises') },
+        {
+            name: 'Maillots',
+            href: route('products'),
+            subLinks: [
+                { name: 'Non Voilée', href: route('products', { category: 'non voilée' }) },
+                { name: 'Voilée', href: route('products', { category: 'voilée' }) },
+                { name: 'Enfant', href: route('products', { category: 'enfant' }) },
+            ]
+        },
         { name: 'À Propos', href: route('about') },
     ];
 
-    const leftLinks = navLinks.slice(0, 3);
-    const rightLinks = navLinks.slice(3, 6);
+    const leftLinks = navLinks.slice(0, 2);
+    const rightLinks = navLinks.slice(2, 4);
 
-    // Fallback si cartCount n'est pas défini
     const { cartCount = 0 } = usePage().props || {};
 
     const menuVars = {
@@ -47,8 +56,8 @@ export default function MainLayout({ children }) {
     };
 
     const linkVars = {
-        initial: { y: 30, opacity: 0 },
-        animate: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } }
+        initial: { y: 20, opacity: 0 },
+        animate: { y: 0, opacity: 1, transition: { duration: 0.4, ease: "easeOut" } }
     };
 
     return (
@@ -58,7 +67,7 @@ export default function MainLayout({ children }) {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center relative">
 
-                        {/* Menu Mobile & Liens Gauche */}
+                        {/* Menu Mobile (Hamburger) & Liens Gauche (PC) */}
                         <div className="flex-1 flex items-center justify-start">
                             <button
                                 className="md:hidden text-charcoal hover:text-burgundy transition z-[60] relative p-1"
@@ -67,6 +76,7 @@ export default function MainLayout({ children }) {
                             >
                                 {isMobileMenuOpen ? <X size={30} strokeWidth={1.2} /> : <Menu size={30} strokeWidth={1.2} />}
                             </button>
+
                             <div className="hidden md:flex space-x-8">
                                 {leftLinks.map((link) => (
                                     <Link key={link.name} href={link.href} className="text-[11px] uppercase tracking-[0.15em] font-medium hover:text-burgundy transition duration-300 relative group">
@@ -78,7 +88,6 @@ export default function MainLayout({ children }) {
                         </div>
 
                         {/* Logo Centré */}
-
                         <div className="flex-shrink-0 absolute left-1/2 transform -translate-x-1/2 z-[60]">
                             <Link href={route('home')} className="block group" onClick={() => setIsMobileMenuOpen(false)}>
                                 <img
@@ -89,16 +98,40 @@ export default function MainLayout({ children }) {
                             </Link>
                         </div>
 
-                        {/* Liens Droite & Panier */}
+                        {/* Liens Droite (PC) & Panier */}
                         <div className="flex-1 flex items-center justify-end space-x-8">
-                            <div className="hidden md:flex space-x-8">
+                            <div className="hidden md:flex items-center space-x-8">
                                 {rightLinks.map((link) => (
-                                    <Link key={link.name} href={link.href} className="text-[11px] uppercase tracking-[0.15em] font-medium hover:text-burgundy transition duration-300 relative group">
-                                        {link.name}
-                                        <span className="absolute -bottom-1.5 left-1/2 transform -translate-x-1/2 w-0 h-[1px] bg-burgundy transition-all duration-300 group-hover:w-full"></span>
-                                    </Link>
+                                    <div key={link.name} className="relative group">
+                                        {link.subLinks ? (
+                                            <div className="flex items-center cursor-pointer text-[11px] uppercase tracking-[0.15em] font-medium hover:text-burgundy transition duration-300 py-2">
+                                                <Link href={link.href} className="flex items-center">
+                                                    {link.name}
+                                                </Link>
+                                                <ChevronDown size={12} className="ml-1 opacity-50 group-hover:rotate-180 transition-transform duration-300" />
+
+                                                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-40 bg-cream/95 backdrop-blur-md shadow-lg border border-burgundy/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 flex flex-col p-2">
+                                                    {link.subLinks.map(subLink => (
+                                                        <Link
+                                                            key={subLink.name}
+                                                            href={subLink.href}
+                                                            className="text-center text-[10px] uppercase tracking-widest py-3 hover:bg-burgundy hover:text-cream transition-colors duration-300"
+                                                        >
+                                                            {subLink.name}
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <Link href={link.href} className="text-[11px] uppercase tracking-[0.15em] font-medium hover:text-burgundy transition duration-300 relative group">
+                                                {link.name}
+                                                <span className="absolute -bottom-1.5 left-1/2 transform -translate-x-1/2 w-0 h-[1px] bg-burgundy transition-all duration-300 group-hover:w-full"></span>
+                                            </Link>
+                                        )}
+                                    </div>
                                 ))}
                             </div>
+
                             <Link href={route('cart')} className="text-charcoal hover:text-burgundy transition relative z-[60]">
                                 <ShoppingBag size={24} strokeWidth={1.2} />
                                 {cartCount > 0 && (
@@ -111,7 +144,7 @@ export default function MainLayout({ children }) {
                     </div>
                 </div>
 
-                {/* Menu Mobile Overlay */}
+                {/* --- NOUVEAU MENU MOBILE --- */}
                 <AnimatePresence>
                     {isMobileMenuOpen && (
                         <motion.div
@@ -119,33 +152,86 @@ export default function MainLayout({ children }) {
                             initial="initial"
                             animate="animate"
                             exit="exit"
-                            className="fixed inset-0 bg-cream z-50 flex flex-col justify-center items-center h-screen"
+                            className="fixed inset-0 bg-cream z-50 flex flex-col h-screen overflow-y-auto pt-28 pb-40"
                         >
-                            <div className="flex flex-col space-y-8 text-center mt-12">
+                            <div className="flex flex-col w-full px-8 mt-4">
                                 {navLinks.map((link, i) => (
-                                    <div key={link.name} className="overflow-hidden">
+                                    <div
+                                        key={link.name}
+                                        className="w-full"
+                                        style={{ borderBottom: '1px solid rgba(128, 0, 32, 0.25)' }}
+                                    >
                                         <motion.div variants={linkVars} custom={i} transition={{ delay: 0.1 * i }}>
-                                            <Link
-                                                href={link.href}
-                                                onClick={() => setIsMobileMenuOpen(false)}
-                                                className="font-dream text-4xl md:text-5xl text-charcoal hover:text-burgundy transition-colors duration-300 relative inline-block group"
-                                            >
-                                                {link.name}
-                                                <span className="absolute top-1/2 -left-8 w-4 h-[1px] bg-burgundy opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
-                                                <span className="absolute top-1/2 -right-8 w-4 h-[1px] bg-burgundy opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
-                                            </Link>
+
+                                            {link.subLinks ? (
+                                                <div className="flex flex-col w-full">
+                                                    {/* Ligne principale "Maillots" avec Chevron à droite */}
+                                                    <div className="flex items-center justify-between w-full py-6">
+                                                        <Link
+                                                            href={link.href}
+                                                            onClick={() => setIsMobileMenuOpen(false)}
+                                                            className="font-dream text-3xl md:text-4xl text-charcoal hover:text-burgundy transition-colors duration-300"
+                                                        >
+                                                            {link.name}
+                                                        </Link>
+                                                        <button
+                                                            onClick={() => setIsMaillotsOpen(!isMaillotsOpen)}
+                                                            className="p-2 -mr-2 text-charcoal hover:text-burgundy transition-colors"
+                                                        >
+                                                            <motion.div animate={{ rotate: isMaillotsOpen ? 180 : 0 }}>
+                                                                <ChevronDown size={28} strokeWidth={1.5} />
+                                                            </motion.div>
+                                                        </button>
+                                                    </div>
+
+                                                    {/* Sous-catégories alignées à gauche et indentées */}
+                                                    <AnimatePresence>
+                                                        {isMaillotsOpen && (
+                                                            <motion.div
+                                                                initial={{ height: 0, opacity: 0 }}
+                                                                animate={{ height: "auto", opacity: 1 }}
+                                                                exit={{ height: 0, opacity: 0 }}
+                                                                className="overflow-hidden w-full flex flex-col"
+                                                            >
+                                                                {/* CORRECTION ICI : border-burgundy/20 pour la ligne verticale */}
+                                                                <div className="pb-5 pt-1 flex flex-col gap-4 pl-5 border-l-2 border-burgundy/20 ml-2 mb-2">
+                                                                    {link.subLinks.map((subLink) => (
+                                                                        <Link
+                                                                            key={subLink.name}
+                                                                            href={subLink.href}
+                                                                            onClick={() => setIsMobileMenuOpen(false)}
+                                                                            className="font-dream text-2xl text-charcoal/70 hover:text-burgundy transition-colors block w-full"
+                                                                        >
+                                                                            {subLink.name}
+                                                                        </Link>
+                                                                    ))}
+                                                                </div>
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
+                                                </div>
+                                            ) : (
+                                                // Liens normaux
+                                                <Link
+                                                    href={link.href}
+                                                    onClick={() => setIsMobileMenuOpen(false)}
+                                                    className="block w-full py-6 font-dream text-3xl md:text-4xl text-charcoal hover:text-burgundy transition-colors duration-300"
+                                                >
+                                                    {link.name}
+                                                </Link>
+                                            )}
+
                                         </motion.div>
                                     </div>
                                 ))}
                             </div>
 
-                            {/* Footer du Menu Mobile - MODIFIÉ ICI */}
+                            {/* Footer du Menu Mobile */}
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                transition={{ delay: 0.8 }}
-                                // bottom-32 (au lieu de bottom-10) remonte le bloc au-dessus du bouton WhatsApp
-                                className="absolute bottom-32 w-full flex flex-col items-center space-y-5"
+                                transition={{ delay: 0.6 }}
+                                className="mt-auto w-full flex flex-col items-center space-y-4 pt-12 pb-8"
                             >
                                 <div className="flex space-x-6 text-charcoal">
                                     <a href="https://www.instagram.com/boutheina_maillotdeplage?igsh=MXF4ZGVpMTQ5dm44dg==" className="hover:text-burgundy hover:scale-110 transition duration-300">
@@ -193,18 +279,14 @@ export default function MainLayout({ children }) {
                             </div>
                         </div>
 
-                        {/* Navigation */}
+                        {/* Navigation Footer */}
                         <div>
                             <h4 className="text-cream text-[11px] font-bold uppercase tracking-[0.2em] mb-8">Boutique</h4>
                             <ul className="space-y-4 text-sm font-light">
-                                {navLinks.slice(0, 5).map(link => (
-                                    <li key={link.name}>
-                                        <Link href={link.href} className="text-cream opacity-70 hover:opacity-100 transition relative group inline-block">
-                                            {link.name}
-                                            <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-cream transition-all duration-300 group-hover:w-full"></span>
-                                        </Link>
-                                    </li>
-                                ))}
+                                <li><Link href={route('home')} className="text-cream opacity-70 hover:opacity-100 transition relative group inline-block">Accueil</Link></li>
+                                <li><Link href={route('chemises')} className="text-cream opacity-70 hover:opacity-100 transition relative group inline-block">Chemises</Link></li>
+                                <li><Link href={route('products')} className="text-cream opacity-70 hover:opacity-100 transition relative group inline-block">Maillots</Link></li>
+                                <li><Link href={route('products', { category: 'enfant' })} className="text-cream opacity-70 hover:opacity-100 transition relative group inline-block">Filles</Link></li>
                             </ul>
                         </div>
 
