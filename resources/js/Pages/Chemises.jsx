@@ -7,6 +7,10 @@ import {
     ShoppingBag, Heart
 } from 'lucide-react';
 
+// IMPORT CORRIGÉ : Attention à l'orthographe du dossier 'Components' (et pas 'Componenets') 
+// et au nom de la fonction exportée par défaut 'ChemisesReviewsCarousel'
+import ChemisesReviewsCarousel from '@/Components/ChemisesReviews';
+
 const ProductBadge = ({ tag, discount }) => {
     if (!tag) return null;
 
@@ -47,9 +51,9 @@ export default function Chemises({ products, currentSize, availableSizes }) {
     const handleFilterChange = (value) => {
         router.get(route('chemises'), {
             size: value || undefined
-        }, { 
-            preserveState: true, 
-            preserveScroll: true 
+        }, {
+            preserveState: true,
+            preserveScroll: true
         });
     };
 
@@ -62,7 +66,7 @@ export default function Chemises({ products, currentSize, availableSizes }) {
                     <h1 className="text-4xl md:text-5xl font-dream text-charcoal tracking-wide capitalize mb-6">
                         Collection Chemises
                     </h1>
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
@@ -80,14 +84,14 @@ export default function Chemises({ products, currentSize, availableSizes }) {
                 </div>
 
                 {/* --- AVANTAGES SPÉCIFIQUES CHEMISES --- */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-12 max-w-5xl mx-auto">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-14 max-w-5xl mx-auto">
                     {[
                         { icon: <Wind size={20} strokeWidth={1.5} />, text: "Tissu fluide et respirant" },
                         { icon: <Star size={20} strokeWidth={1.5} />, text: "Coupe élégante & moderne" },
                         { icon: <Feather size={20} strokeWidth={1.5} />, text: "Confort absolu" },
                         { icon: <Award size={20} strokeWidth={1.5} />, text: "Finitions premium" }
                     ].map((item, idx) => (
-                        <motion.div 
+                        <motion.div
                             key={idx}
                             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * idx }}
                             className="bg-[#F9F8F6] border border-burgundy/5 p-4 flex flex-col items-center justify-center text-center gap-3 hover:border-burgundy/20 transition-colors duration-300 shadow-sm"
@@ -102,33 +106,46 @@ export default function Chemises({ products, currentSize, availableSizes }) {
                     ))}
                 </div>
 
-                {/* --- BARRE DE FILTRE (Uniquement Taille) --- */}
-                <div className="mb-12 flex flex-col md:flex-row justify-between items-center gap-6 w-full">
-                    
-                    <div className="flex flex-row gap-3 w-full md:w-auto">
-                        {/* Dropdown Taille Uniquement */}
-                        <div className="relative flex-1 md:w-56">
-                            <select 
-                                value={currentSize || ''} 
-                                onChange={(e) => handleFilterChange(e.target.value)}
-                                className="w-full appearance-none bg-none bg-transparent border border-burgundy/20 text-charcoal text-[10px] md:text-[11px] uppercase tracking-widest font-bold py-3 pl-3 pr-8 focus:ring-1 focus:ring-burgundy focus:border-burgundy cursor-pointer outline-none transition-colors hover:border-burgundy"
-                            >
-                                <option value="">Toutes les tailles</option>
-                                {availableSizes.map(size => (
-                                    <option key={size} value={size}>{size}</option>
-                                ))}
-                            </select>
-                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 md:px-3 text-burgundy">
-                                <svg className="fill-current h-3 w-3" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                            </div>
-                        </div>
+                {/* --- BARRE DE FILTRE (Taille en pastilles) --- */}
+                <div className="mb-14 flex flex-col items-center gap-6">
+
+                    <div className="bg-[#F9F8F6] border border-burgundy/10 p-1.5 rounded-full shadow-sm flex flex-wrap justify-center gap-1.5">
+                        <button
+                            onClick={() => handleFilterChange('')}
+                            className={`h-10 px-4 flex items-center justify-center rounded-full text-[10px] uppercase tracking-widest font-bold transition-colors duration-300 ${
+                                !currentSize ? 'bg-burgundy text-cream shadow-sm' : 'text-charcoal/60 hover:text-burgundy'
+                            }`}
+                        >
+                            Toutes les tailles
+                        </button>
+                        {availableSizes.map((size) => {
+                            const active = currentSize === size;
+                            return (
+                                <button
+                                    key={size}
+                                    onClick={() => handleFilterChange(size)}
+                                    className={`w-10 h-10 flex items-center justify-center rounded-full text-[11px] font-bold uppercase transition-colors duration-300 ${
+                                        active ? 'bg-burgundy text-cream shadow-sm' : 'text-charcoal/60 hover:text-burgundy'
+                                    }`}
+                                >
+                                    {size}
+                                </button>
+                            );
+                        })}
                     </div>
 
-                    {/* Compteur de résultats */}
-                    <div className="w-full md:w-auto flex justify-center md:justify-end mt-2 md:mt-0">
+                    <div className="flex items-center gap-4">
                         <span className="text-[10px] md:text-xs uppercase tracking-widest font-bold text-charcoal/60">
                             {products.total} Modèle{products.total > 1 ? 's' : ''}
                         </span>
+                        {!!currentSize && (
+                            <button
+                                onClick={() => router.get(route('chemises'))}
+                                className="flex items-center gap-1 text-[10px] md:text-xs uppercase tracking-widest font-bold text-burgundy/70 hover:text-burgundy transition-colors"
+                            >
+                                Effacer le filtre
+                            </button>
+                        )}
                     </div>
 
                 </div>
@@ -198,7 +215,7 @@ export default function Chemises({ products, currentSize, availableSizes }) {
                             <p className="text-charcoal/60 font-serif max-w-md">
                                 Nous n'avons pas trouvé de chemises correspondant à cette taille.
                             </p>
-                            <button 
+                            <button
                                 onClick={() => router.get(route('chemises'))}
                                 className="mt-6 bg-burgundy text-cream px-6 py-3 text-[10px] uppercase font-bold tracking-widest hover:bg-charcoal transition-colors shadow-md"
                             >
@@ -230,8 +247,11 @@ export default function Chemises({ products, currentSize, availableSizes }) {
                     </div>
                 )}
 
+                {/* --- AVIS SUR LES CHEMISES (COMPOSANT INTÉGRÉ ICI) --- */}
+                <ChemisesReviewsCarousel />
+
                 {/* --- STATISTIQUES (RÉASSURANCE) --- */}
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-50px" }}

@@ -8,6 +8,7 @@ import {
     Flame, Sparkles, Tag, Droplets, Wind, Feather, RefreshCw,
     Truck, ShieldCheck
 } from 'lucide-react';
+import ReviewsCarousel from '@/Components/ReviewsCarousel';
 
 // --- Badge Identique à la page Boutique ---
 const ProductBadge = ({ tag, discount }) => {
@@ -429,6 +430,13 @@ export default function ProductShow({ product, recommendations }) {
                         </motion.div>
                     </div>
                 </div>
+            </div>
+             {/* --- AVIS SUR CE PRODUIT --- */}
+            <div className="max-w-7xl mx-auto px-4">
+                <ReviewsCarousel
+                    eyebrow="Ce qu'elles en disent"
+                    title="Avis sur ce modèle"
+                />
             </div>
 
             {/* --- SECTION RECOMMANDATIONS --- */}
