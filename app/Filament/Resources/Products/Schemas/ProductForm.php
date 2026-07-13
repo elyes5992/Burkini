@@ -56,7 +56,8 @@ class ProductForm
                     ->step(0.01)
                     ->nullable()
                     ->helperText('Remplissez uniquement pour les promos. Laissez vide sinon.')
-                    ->visible(fn($get) => $get('tag') === 'promo'),
+                    ->visible(fn($get) => $get('tag') === 'promo')
+                    ->dehydrateStateUsing(fn($state, $get) => $get('tag') === 'promo' ? $state : null),
 
                 // ── Tag badge ─────────────────────────────────────────────
                 Select::make('tag')
