@@ -115,4 +115,99 @@ class StatsController extends Controller
             default => [now()->subDays(29)->startOfDay(), now()->endOfDay()],
         };
     }
+    public function visitorJourney(string $visitorId): \Illuminate\Http\JsonResponse
+    {
+        $events = VisitorEvent::where('visitor_id', $visitorId)
+            ->orderBy('created_at', 'asc')
+            ->get(['event_type', 'url', 'referrer', 'meta', 'created_at', 'product_type']);
+
+        $journey = $events->map(function ($event) {
+            return [
+                'step' => $this->resolvePageName($event->url, $event->event_type, $event->meta, $event->product_type),
+                'url' => $event->url,
+                'event_type' => $event->event_type,
+                'time' => $event->created_at->format('H:i:s'),
+                'date' => $event->created_at->format('d/m/Y'),
+                'referrer' => $this->resolveReferrerName($event->referrer),
+                'meta' => $event->meta,
+            ];
+        });
+
+        return response()->json([
+            'visitor_id' => $visitorId,
+            'total_steps' => $journey->count(),
+            'duration_minutes' => $events->count() > 1 
+                ? round($events->last()->created_at->diffInMinutes($events->first()->created_at), 1)
+                : 0,
+            'journey' => $journey,
+        ]);
+    }
+
+    private function resolvePageName(string $url, string $eventType, ?array $meta, ?string $productType): string
+    {
+        $path = parse_url($url, PHP_URL_PATH) ?? '/';
+        $path = rtrim($path, '/') ?: '/';
+
+        // Événements business
+        if ($eventType === VisitorEvent::TYPE_ADD_TO_CART) {
+            $productName = $meta['product_name'] ?? null;
+            return $productName ? "🛒 Ajout panier : {$productName}" : '🛒 Ajout au panier';
+        }
+        if ($eventType === VisitorEvent::TYPE_CHECKOUT_START) {
+            return '💳 Début du paiement';
+        }
+        if ($eventType === VisitorEvent::TYPE_PURCHASE) {
+            $orderId = $meta['order_id'] ?? null;
+            return $orderId ? "✅ Commande #{$orderId}" : '✅ Achat confirmé';
+        }
+
+        // Pages Vellure Store (adapte selon tes routes)
+        return match ($path) {
+            '/' => '🏠 Accueil',
+            '/shop' => '🏪 Boutique',
+            '/cart' => '🛒 Panier',
+            '/checkout' => '💳 Checkout',
+            '/about' => 'ℹ️ À propos',
+            '/contact' => '📧 Contact',
+            '/profile' => '👤 Profil',
+            '/login' => '🔑 Connexion',
+            '/register' => '📝 Inscription',
+            default => $this->resolveDynamicPage($path, $eventType, $meta, $productType),
+        };
+    }
+
+    private function resolveDynamicPage(string $path, string $eventType, ?array $meta, ?string $productType): string
+    {
+        // Produit individuel
+        if (str_starts_with($path, '/shop/') || str_starts_with($path, '/product/')) {
+            $slug = basename($path);
+            $productName = $meta['product_name'] ?? null;
+            return $productName ? "👁️ Produit : {$productName}" : "👁️ Produit : {$slug}";
+        }
+
+        // Catégorie
+        if (str_starts_with($path, '/category/')) {
+            $slug = basename($path);
+            return "📂 Catégorie : {$slug}";
+        }
+
+        // Admin
+        if (str_starts_with($path, '/admin')) return '🔐 Admin';
+        if (str_starts_with($path, '/dashboard')) return '📊 Dashboard';
+
+        // Fallback
+        return $path;
+    }
+
+    private function resolveReferrerName(?string $referrer): ?string
+    {
+        if (!$referrer) return null;
+        $ref = strtolower($referrer);
+        if (str_contains($ref, 'facebook')) return 'Facebook';
+        if (str_contains($ref, 'instagram')) return 'Instagram';
+        if (str_contains($ref, 'google')) return 'Google';
+        if (str_contains($ref, 'vellure')) return 'Site Vellure';
+        return 'Externe';
+    }
+
 }

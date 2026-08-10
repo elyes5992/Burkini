@@ -1,6 +1,11 @@
-import { useState } from 'react';
-import { Globe, Clock, Users, Check, X, ChevronLeft, ChevronRight, ShoppingCart, Smartphone, Monitor, Tablet } from 'lucide-react';
+import { useState, Fragment } from 'react';
+import {
+    Globe, Clock, Users, Check, X,
+    ChevronLeft, ChevronRight, ChevronDown,
+    ShoppingCart, Smartphone, Monitor, Tablet
+} from 'lucide-react';
 import { Link } from '@inertiajs/react';
+import VisitorJourneyInline from './VisitorJourneyInline';
 
 const COLUMNS = [
     { key: 'has_page_view', label: 'Page view', color: 'text-blue-400' },
@@ -26,17 +31,16 @@ const PLATFORM_ICONS = {
 };
 
 export default function LiveVisitorsTable({ visitors, pagination, filters }) {
-     // Gère différents formats de pagination
-    const prev_cursor = pagination?.prev_cursor 
-        ?? pagination?.previous_cursor 
-        ?? null;
+    const prev_cursor = pagination?.prev_cursor ?? pagination?.previous_cursor ?? null;
     const next_cursor = pagination?.next_cursor ?? null;
-    
-    // Si pagination est undefined, on désactive la pagination
     const hasPrev = !!prev_cursor;
     const hasNext = !!next_cursor;
-    
     const perPage = filters?.per_page || 25;
+    const [expandedVisitor, setExpandedVisitor] = useState(null);
+
+    const toggleJourney = (visitorId) => {
+        setExpandedVisitor(expandedVisitor === visitorId ? null : visitorId);
+    };
 
     const buildUrl = (cursor) => {
         const params = new URLSearchParams(window.location.search);
@@ -111,6 +115,7 @@ export default function LiveVisitorsTable({ visitors, pagination, filters }) {
                 <table className="w-full">
                     <thead>
                         <tr className="border-b border-gray-800/40 bg-gray-950/30">
+                            <th className="text-center px-3 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest w-[40px]"></th>
                             <th className="text-left px-6 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest w-[180px]">
                                 Visiteur
                             </th>
@@ -146,78 +151,114 @@ export default function LiveVisitorsTable({ visitors, pagination, filters }) {
                     <tbody className="divide-y divide-gray-800/20">
                         {visitors.length === 0 ? (
                             <tr>
-                                <td colSpan={10} className="text-center py-16">
+                                <td colSpan={12} className="text-center py-16">
                                     <Clock className="w-10 h-10 text-gray-700 mx-auto mb-3" />
                                     <p className="text-gray-500 text-sm font-medium">Aucun visiteur récent</p>
                                     <p className="text-gray-600 text-xs mt-1">Les visiteurs apparaîtront ici en temps réel</p>
                                 </td>
                             </tr>
                         ) : (
-                            visitors.map((visitor) => (
-                                <tr
-                                    key={visitor.visitor_id}
-                                    className="group hover:bg-gray-800/40 transition-colors duration-150"
-                                >
-                                    <td className="px-6 py-3.5">
-                                        <div className="text-sm font-mono text-gray-200 font-medium">
-                                            visiteur_{visitor.visitor_id.slice(0, 8)}
-                                        </div>
-                                    </td>
+                            visitors.map((visitor) => {
+                                const isExpanded = expandedVisitor === visitor.visitor_id;
 
-                                    <td className="px-4 py-3.5">
-                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-semibold border ${SOURCE_STYLES[visitor.source] || SOURCE_STYLES.Autre}`}>
-                                            {visitor.source}
-                                        </span>
-                                    </td>
+                                return (
+                                    <Fragment key={`group-${visitor.visitor_id}`}>
+                                        {/* Ligne principale */}
+                                        <tr
+                                            className={`group transition-colors duration-150 cursor-pointer hover:bg-gray-800/40 ${isExpanded ? 'bg-gray-800/30' : ''}`}
+                                            onClick={() => toggleJourney(visitor.visitor_id)}
+                                        >
+                                            {/* Expand Button */}
+                                            <td className="px-3 py-3.5 w-[40px] text-center">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        toggleJourney(visitor.visitor_id);
+                                                    }}
+                                                    className={`p-1 rounded-lg transition-all ${isExpanded ? 'bg-gray-700 text-white rotate-180' : 'text-gray-600 hover:text-gray-400 hover:bg-gray-800'}`}
+                                                >
+                                                    <ChevronDown className="w-4 h-4" />
+                                                </button>
+                                            </td>
 
-                                    <td className="px-4 py-3.5">
-                                        <div className="flex items-center gap-1.5 text-xs text-gray-400">
-                                            <Clock className="w-3 h-3" />
-                                            {new Date(visitor.last_seen).toLocaleTimeString('fr-FR', {
-                                                hour: '2-digit',
-                                                minute: '2-digit',
+                                            {/* Visitor ID */}
+                                            <td className="px-6 py-3.5">
+                                                <div className="text-sm font-mono text-gray-200 font-medium">
+                                                    visiteur_{visitor.visitor_id.slice(0, 8)}
+                                                </div>
+                                            </td>
+
+                                            {/* Source */}
+                                            <td className="px-4 py-3.5">
+                                                <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-semibold border ${SOURCE_STYLES[visitor.source] || SOURCE_STYLES.Autre}`}>
+                                                    {visitor.source}
+                                                </span>
+                                            </td>
+
+                                            {/* Last Seen */}
+                                            <td className="px-4 py-3.5">
+                                                <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                                                    <Clock className="w-3 h-3" />
+                                                    {new Date(visitor.last_seen).toLocaleTimeString('fr-FR', {
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
+                                                    })}
+                                                </div>
+                                            </td>
+
+                                            {/* Activity Columns */}
+                                            {COLUMNS.map((col) => {
+                                                const isDone = visitor[col.key] == 1;
+                                                return (
+                                                    <td key={col.key} className="px-3 py-3.5 text-center">
+                                                        {isDone ? (
+                                                            <div className={`inline-flex items-center justify-center w-7 h-7 rounded-lg ${col.color.replace('text-', 'bg-').replace('400', '500')}/15`}>
+                                                                <Check className={`w-4 h-4 ${col.color}`} strokeWidth={2.5} />
+                                                            </div>
+                                                        ) : (
+                                                            <div className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-gray-800/50">
+                                                                <X className="w-3.5 h-3.5 text-gray-600" strokeWidth={2} />
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                );
                                             })}
-                                        </div>
-                                    </td>
 
-                                    {COLUMNS.map((col) => {
-                                        const isDone = visitor[col.key] == 1;
-                                        return (
-                                            <td key={col.key} className="px-3 py-3.5 text-center">
-                                                {isDone ? (
-                                                    <div className={`inline-flex items-center justify-center w-7 h-7 rounded-lg ${col.color.replace('text-', 'bg-').replace('400', '500')}/15`}>
-                                                        <Check className={`w-4 h-4 ${col.color}`} strokeWidth={2.5} />
-                                                    </div>
+                                            {/* Produit ajouté */}
+                                            <td className="px-4 py-3.5">
+                                                {visitor.has_cart == 1 && visitor.cart_product_name ? (
+                                                    <span className="text-xs text-gray-400 truncate max-w-[160px]" title={visitor.cart_product_name}>
+                                                        {visitor.cart_product_name}
+                                                    </span>
                                                 ) : (
-                                                    <div className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-gray-800/50">
-                                                        <X className="w-3.5 h-3.5 text-gray-600" strokeWidth={2} />
-                                                    </div>
+                                                    <span className="text-gray-600 text-xs">—</span>
                                                 )}
                                             </td>
-                                        );
-                                    })}
 
-                                    <td className="px-4 py-3.5">
-                                        {visitor.has_cart == 1 && visitor.cart_product_name ? (
-                                            <span className="text-xs text-gray-400 truncate max-w-[160px]" title={visitor.cart_product_name}>
-                                                {visitor.cart_product_name}
-                                            </span>
-                                        ) : (
-                                            <span className="text-gray-600 text-xs">—</span>
+                                            {/* Platform */}
+                                            <td className="px-4 py-3.5">
+                                                <PlatformIcon platform={visitor.platform || 'unknown'} />
+                                            </td>
+
+                                            {/* Status */}
+                                            <td className="px-6 py-3.5 text-right">
+                                                <span className={`text-xs font-semibold ${getStatusColor(visitor)}`}>
+                                                    {getStatusLabel(visitor)}
+                                                </span>
+                                            </td>
+                                        </tr>
+
+                                        {/* Ligne expandée - PARCOURS */}
+                                        {isExpanded && (
+                                            <tr className="bg-gray-950/30">
+                                                <td colSpan={12} className="px-0 py-0">
+                                                    <VisitorJourneyInline visitorId={visitor.visitor_id} />
+                                                </td>
+                                            </tr>
                                         )}
-                                    </td>
-
-                                    <td className="px-4 py-3.5">
-                                        <PlatformIcon platform={visitor.platform || 'unknown'} />
-                                    </td>
-
-                                    <td className="px-6 py-3.5 text-right">
-                                        <span className={`text-xs font-semibold ${getStatusColor(visitor)}`}>
-                                            {getStatusLabel(visitor)}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))
+                                    </Fragment>
+                                );
+                            })
                         )}
                     </tbody>
                 </table>
@@ -237,24 +278,18 @@ export default function LiveVisitorsTable({ visitors, pagination, filters }) {
                     <Link
                         href={hasPrev ? buildUrl(prev_cursor) : '#'}
                         preserveState
-                        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${prev_cursor
-                                ? 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white border border-gray-700/50'
-                                : 'bg-gray-900/30 text-gray-600 cursor-not-allowed border border-gray-800/30'
-                            }`}
-                        onClick={(e) => !prev_cursor && e.preventDefault()}
+                        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${hasPrev ? 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white border border-gray-700/50' : 'bg-gray-900/30 text-gray-600 cursor-not-allowed border border-gray-800/30'}`}
+                        onClick={(e) => !hasPrev && e.preventDefault()}
                     >
                         <ChevronLeft className="w-3.5 h-3.5" />
                         Précédent
                     </Link>
 
                     <Link
-                        href={next_cursor ? buildUrl(next_cursor) : '#'}
+                        href={hasNext ? buildUrl(next_cursor) : '#'}
                         preserveState
-                        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${next_cursor
-                                ? 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white border border-gray-700/50'
-                                : 'bg-gray-900/30 text-gray-600 cursor-not-allowed border border-gray-800/30'
-                            }`}
-                        onClick={(e) => !next_cursor && e.preventDefault()}
+                        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${hasNext ? 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white border border-gray-700/50' : 'bg-gray-900/30 text-gray-600 cursor-not-allowed border border-gray-800/30'}`}
+                        onClick={(e) => !hasNext && e.preventDefault()}
                     >
                         Suivant
                         <ChevronRight className="w-3.5 h-3.5" />

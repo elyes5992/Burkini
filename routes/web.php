@@ -47,10 +47,14 @@ Route::get('/guide-des-tailles', function () {
     return Inertia::render('GuideTailles');
 })->name('guide-tailles');
 
-Route::get('/admin/stats', [StatsController::class, 'index'])
-    ->name('admin.stats')
-    ->middleware(['auth', 'verified']);
-
+Route::middleware(['auth'])
+    ->prefix('admin')
+    ->group(function () {
+        Route::get('/stats', [StatsController::class, 'index'])->name('admin.stats');
+        // 🔥 AJOUTÉ : Parcours d'un visiteur
+        Route::get('/stats/visitor/{visitorId}/journey', [StatsController::class, 'visitorJourney'])
+            ->name('admin.stats.visitor.journey');
+    });
 
 
 
