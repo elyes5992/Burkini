@@ -8,6 +8,8 @@ use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\Admin\StatsController;
+
 
 
 
@@ -44,6 +46,10 @@ Route::get('/livraison-et-retours', function () {
 Route::get('/guide-des-tailles', function () {
     return Inertia::render('GuideTailles');
 })->name('guide-tailles');
+
+Route::get('/admin/stats', [StatsController::class, 'index'])
+    ->name('admin.stats')
+    ->middleware(['auth', 'verified']);
 
 
 

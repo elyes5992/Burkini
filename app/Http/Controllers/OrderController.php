@@ -5,11 +5,17 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Order;
+use App\Services\VisitorTracker;
+use App\Models\VisitorEvent;
 
 class OrderController extends Controller
 {
     const DELIVERY_FEE      = 8.00;
     const FREE_DELIVERY_MIN = 300.00;
+
+    public function __construct(private VisitorTracker $tracker)
+    {
+    }
 
     /** Calculates delivery fee based on subtotal */
     private function deliveryFee(float $subtotal): float
@@ -76,6 +82,13 @@ class OrderController extends Controller
                 'subtotal'      => $item['price'] * $item['quantity'],
             ]);
         }
+
+        // 🔥 TRACK PURCHASE
+        $this->tracker->log($request, VisitorEvent::TYPE_PURCHASE, [
+            'order_id'     => $order->id,
+            'total'        => $total,
+            'items_count'  => count($cart),
+        ]);
 
         session()->forget('cart');
 

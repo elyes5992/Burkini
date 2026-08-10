@@ -5,9 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Product;
+use App\Services\VisitorTracker;
+use App\Models\VisitorEvent;
 
 class CartController extends Controller
 {
+    
+    public function __construct(private VisitorTracker $tracker)
+    {
+    }
     // Get cart from session
     private function getCart(): array
     {
@@ -35,25 +41,24 @@ class CartController extends Controller
             'quantity'   => 'integer|min:1|max:10',
         ]);
 
-       $product  = Product::with(['images', 'media'])->findOrFail($validated['product_id']);
+        $product  = Product::with(['images', 'media'])->findOrFail($validated['product_id']);
         $size     = $validated['size'];
         $quantity = $validated['quantity'] ?? 1;
         $cart     = $this->getCart();
 
-        // Unique key per product+size combo
         $key = $product->id . '_' . $size;
 
         if (isset($cart[$key])) {
             $cart[$key]['quantity'] += $quantity;
         } else {
             $cart[$key] = [
-                'key'      => $key,
+                'key'        => $key,
                 'product_id' => $product->id,
-                'name'     => $product->name,
-                'price'    => (float) $product->price,
-                'size'     => $size,
-                'quantity' => $quantity,
-                'image'    => $product->getFirstMediaUrl('images', 'thumb')
+                'name'       => $product->name,
+                'price'      => (float) $product->price,
+                'size'       => $size,
+                'quantity'   => $quantity,
+                'image'      => $product->getFirstMediaUrl('images', 'thumb')
                     ?: ($product->images->first()
                         ? '/storage/' . $product->images->first()->image_path
                         : '/assets/image/default.jpg'),
@@ -61,6 +66,16 @@ class CartController extends Controller
         }
 
         $this->saveCart($cart);
+
+        // 🔥 TRACK ADD TO CART
+        $this->tracker->log($request, VisitorEvent::TYPE_ADD_TO_CART, [
+            'product_id'   => $product->id,
+            'product_type' => 'product',
+            'product_name' => $product->name,
+            'quantity'     => $quantity,
+            'price'        => $product->price,
+            'size'         => $size,
+        ]);
 
         return back()->with('success', 'Produit ajouté au panier !');
     }
