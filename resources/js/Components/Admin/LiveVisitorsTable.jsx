@@ -139,6 +139,9 @@ export default function LiveVisitorsTable({ visitors, pagination, filters }) {
                                     Produit ajouté
                                 </div>
                             </th>
+                            <th className="text-left px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest w-[120px]">
+                                Catégorie
+                            </th>
                             <th className="text-left px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest w-[100px]">
                                 Plateforme
                             </th>
@@ -234,6 +237,9 @@ export default function LiveVisitorsTable({ visitors, pagination, filters }) {
                                                     <span className="text-gray-600 text-xs">—</span>
                                                 )}
                                             </td>
+                                            <td className="px-4 py-3.5">
+                                                {getCategoryLabel(visitor)}
+                                            </td>
 
                                             {/* Platform */}
                                             <td className="px-4 py-3.5">
@@ -307,6 +313,39 @@ function getStatusColor(v) {
     if (v.has_product_view) return 'text-purple-400';
     if (v.has_page_view) return 'text-blue-400';
     return 'text-gray-500';
+}
+function getCategoryLabel(visitor) {
+    // Si achat → pas de catégorie spécifique (ou tu peux ajouter)
+    if (visitor.has_purchase) return <span className="text-emerald-500/70 text-xs">—</span>;
+    
+    // Si checkout → catégorie du dernier panier
+    if (visitor.has_checkout && visitor.cart_category_name) {
+        return (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-pink-500/10 text-pink-300 border border-pink-500/20">
+                {visitor.cart_category_name}
+            </span>
+        );
+    }
+    
+    // Si panier → catégorie du produit dans le panier
+    if (visitor.has_cart && visitor.cart_category_name) {
+        return (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                {visitor.cart_category_name}
+            </span>
+        );
+    }
+    
+    // Si produit vu → catégorie du produit vu
+    if (visitor.has_product_view && visitor.view_category_name) {
+        return (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                {visitor.view_category_name}
+            </span>
+        );
+    }
+    
+    return <span className="text-gray-600 text-xs">—</span>;
 }
 
 function getStatusLabel(v) {

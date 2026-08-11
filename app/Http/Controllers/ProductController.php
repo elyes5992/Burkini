@@ -5,9 +5,18 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Product;
+use App\Services\VisitorTracker; // 🔥 AJOUTÉ
+use App\Models\VisitorEvent; 
 
 class ProductController extends Controller
 {
+    private VisitorTracker $tracker; 
+    
+    public function __construct(VisitorTracker $tracker) // 🔥 AJOUTÉ
+    {
+        $this->tracker = $tracker;
+    }
+    
     public function home()
     {
         // Récupère les produits qui ont "front_page" activé
@@ -121,6 +130,14 @@ class ProductController extends Controller
         $product = Product::with(['category', 'images', 'sizes'])
             ->where('is_active', true)
             ->findOrFail($id);
+
+         // 🔥 TRACK PRODUCT VIEW
+        $this->tracker->log(request(), VisitorEvent::TYPE_PRODUCT_VIEW, [
+            'product_id'   => $product->id,
+            'product_name' => $product->name,
+            'product_type' => 'product',
+            'category_name' => $product->category?->name, // 🔥 POUR LE TABLEAU
+        ]);    
 
         // Build images array
         $spatieImages = $product->getMedia('images');

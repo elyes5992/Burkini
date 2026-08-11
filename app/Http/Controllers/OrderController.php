@@ -34,6 +34,12 @@ class OrderController extends Controller
         $subtotal = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
         $delivery = $this->deliveryFee($subtotal);
         $total    = $subtotal + $delivery;
+         // 🔥 TRACK CHECKOUT START
+        $this->tracker->log(request(), VisitorEvent::TYPE_CHECKOUT_START, [
+            'items_count' => count($cart),
+            'subtotal'    => $subtotal,
+            'total'       => $total,
+        ]);
 
         return Inertia::render('Checkout', [
             'cart'         => array_values($cart),

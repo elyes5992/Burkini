@@ -10,10 +10,8 @@ use App\Models\VisitorEvent;
 
 class CartController extends Controller
 {
-    
-    public function __construct(private VisitorTracker $tracker)
-    {
-    }
+
+    public function __construct(private VisitorTracker $tracker) {}
     // Get cart from session
     private function getCart(): array
     {
@@ -69,12 +67,13 @@ class CartController extends Controller
 
         // 🔥 TRACK ADD TO CART
         $this->tracker->log($request, VisitorEvent::TYPE_ADD_TO_CART, [
-            'product_id'   => $product->id,
-            'product_type' => 'product',
-            'product_name' => $product->name,
-            'quantity'     => $quantity,
-            'price'        => $product->price,
-            'size'         => $size,
+            'product_id'    => $product->id,
+            'product_type'  => 'product',
+            'product_name'  => $product->name,
+            'category_name' => $product->category?->name, // 🔥 AJOUTÉ
+            'quantity'      => $quantity,
+            'price'         => $product->price,
+            'size'          => $size,
         ]);
 
         return back()->with('success', 'Produit ajouté au panier !');
