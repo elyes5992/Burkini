@@ -24,6 +24,8 @@ class StatsController extends Controller
             [$start, $end] = $this->dateRange($range);
         }
 
+        $hideDirect = $request->boolean('hide_direct', false);
+
         // ── Funnel stats ──
         $counts = VisitorEvent::query()
             ->whereBetween('created_at', [$start, $end])
@@ -72,6 +74,17 @@ class StatsController extends Controller
             ->orderByDesc('last_seen')
             ->orderByDesc('ve.visitor_id');
 
+        // Filtre pour cacher les visites Direct
+        if ($hideDirect) {
+            $visitorsQuery->havingRaw("MAX(CASE
+                WHEN ve.referrer ILIKE '%facebook%' THEN 'Facebook'
+                WHEN ve.referrer ILIKE '%instagram%' THEN 'Instagram'
+                WHEN ve.referrer ILIKE '%google%' THEN 'Google'
+                WHEN ve.referrer IS NULL OR ve.referrer = '' THEN 'Direct'
+                ELSE 'Autre'
+            END) != 'Direct'");
+        }
+
         $visitors = $visitorsQuery->cursorPaginate($perPage);
 
         // ── Chart data ──
@@ -101,7 +114,10 @@ class StatsController extends Controller
             'start' => $start->format('Y-m-d'),
             'end' => $end->format('Y-m-d'),
             'recentVisitors' => $recentVisitors,
-            'filters' => ['per_page' => $perPage],
+            'filters' => [
+                'per_page' => $perPage,
+                'hide_direct' => $hideDirect,
+            ],
         ]);
     }
 
@@ -115,6 +131,7 @@ class StatsController extends Controller
             default => [now()->subDays(29)->startOfDay(), now()->endOfDay()],
         };
     }
+
     public function visitorJourney(string $visitorId): \Illuminate\Http\JsonResponse
     {
         $events = VisitorEvent::where('visitor_id', $visitorId)
@@ -148,7 +165,6 @@ class StatsController extends Controller
         $path = parse_url($url, PHP_URL_PATH) ?? '/';
         $path = rtrim($path, '/') ?: '/';
 
-        // Événements business
         if ($eventType === VisitorEvent::TYPE_ADD_TO_CART) {
             $productName = $meta['product_name'] ?? null;
             return $productName ? "🛒 Ajout panier : {$productName}" : '🛒 Ajout au panier';
@@ -161,7 +177,6 @@ class StatsController extends Controller
             return $orderId ? "✅ Commande #{$orderId}" : '✅ Achat confirmé';
         }
 
-        // Pages Vellure Store (adapte selon tes routes)
         return match ($path) {
             '/' => '🏠 Accueil',
             '/shop' => '🏪 Boutique',
@@ -178,24 +193,20 @@ class StatsController extends Controller
 
     private function resolveDynamicPage(string $path, string $eventType, ?array $meta, ?string $productType): string
     {
-        // Produit individuel
         if (str_starts_with($path, '/shop/') || str_starts_with($path, '/product/')) {
             $slug = basename($path);
             $productName = $meta['product_name'] ?? null;
             return $productName ? "👁️ Produit : {$productName}" : "👁️ Produit : {$slug}";
         }
 
-        // Catégorie
         if (str_starts_with($path, '/category/')) {
             $slug = basename($path);
             return "📂 Catégorie : {$slug}";
         }
 
-        // Admin
         if (str_starts_with($path, '/admin')) return '🔐 Admin';
         if (str_starts_with($path, '/dashboard')) return '📊 Dashboard';
 
-        // Fallback
         return $path;
     }
 
@@ -209,5 +220,4 @@ class StatsController extends Controller
         if (str_contains($ref, 'vellure')) return 'Site Vellure';
         return 'Externe';
     }
-
 }

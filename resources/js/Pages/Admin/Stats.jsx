@@ -1,7 +1,7 @@
 // resources/js/Pages/Admin/Stats.jsx
 
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, EyeOff, Eye } from 'lucide-react';
 import DateRangePicker from '../../Components/Admin/DateRangePicker';
 import FunnelCards from '../../Components/Admin/FunnelCards';
 import LiveVisitorsTable from '../../Components/Admin/LiveVisitorsTable';
@@ -10,10 +10,23 @@ import TrafficChart from '../../Components/Admin/TrafficChart';
 import MiniVisitorsList from '../../Components/Admin/MiniVisitorsList';
 
 export default function Stats({ funnel, visitors, daily, range, start, end, recentVisitors, filters }) {
+    const hideDirect = filters?.hide_direct ?? false;
+
     const handleDateChange = (newRange) => {
         const params = new URLSearchParams(window.location.search);
         params.set('start', newRange.start);
         params.set('end', newRange.end);
+        params.delete('cursor');
+        window.location.href = `${window.location.pathname}?${params.toString()}`;
+    };
+
+    const toggleHideDirect = () => {
+        const params = new URLSearchParams(window.location.search);
+        if (hideDirect) {
+            params.delete('hide_direct');
+        } else {
+            params.set('hide_direct', '1');
+        }
         params.delete('cursor');
         window.location.href = `${window.location.pathname}?${params.toString()}`;
     };
@@ -32,6 +45,29 @@ export default function Stats({ funnel, visitors, daily, range, start, end, rece
                             </p>
                         </div>
                         <div className="flex items-center gap-4">
+                            {/* Bouton Toggle Cacher Direct */}
+                            <button
+                                onClick={toggleHideDirect}
+                                className={`flex items-center gap-2 text-sm font-medium transition-all px-4 py-2.5 rounded-xl border ${
+                                    hideDirect
+                                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20'
+                                        : 'bg-gray-900/80 text-gray-400 border-gray-800 hover:text-gray-200 hover:bg-gray-800'
+                                }`}
+                                title={hideDirect ? "Afficher les visites Direct" : "Cacher les visites Direct (bots)"}
+                            >
+                                {hideDirect ? (
+                                    <>
+                                        <Eye className="w-4 h-4" />
+                                        Afficher Direct
+                                    </>
+                                ) : (
+                                    <>
+                                        <EyeOff className="w-4 h-4" />
+                                        Cacher Direct
+                                    </>
+                                )}
+                            </button>
+
                             <DateRangePicker startDate={start} endDate={end} onChange={handleDateChange} />
                             <Link
                                 href="/admin"
@@ -59,9 +95,7 @@ export default function Stats({ funnel, visitors, daily, range, start, end, rece
                         <div className="lg:col-span-2">
                             <TrafficChart daily={daily} />
                         </div>
-                        <div className="lg:col-span-1">
-                            <MiniVisitorsList visitors={recentVisitors} />
-                        </div>
+                       
                     </div>
                 </main>
             </div>
