@@ -13,7 +13,20 @@ use App\Http\Controllers\Admin\StatsController;
 
 
 
-
+Route::any('/debug-upload', function (\Illuminate\Http\Request $request) {
+    if ($request->isMethod('post')) {
+        return response()->json([
+            'files' => $_FILES,
+            'has_file' => $request->hasFile('testfile'),
+            'is_valid' => $request->hasFile('testfile') ? $request->file('testfile')->isValid() : null,
+            'error_code' => $_FILES['testfile']['error'] ?? null,
+        ]);
+    }
+    return '<form method="POST" enctype="multipart/form-data">
+        <input type="file" name="testfile">
+        <button type="submit">Upload</button>
+    </form>';
+});
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
