@@ -1,23 +1,23 @@
 import '../../css/admin.css';
 import { useState, useEffect } from 'react';
 import { Link, usePage } from '@inertiajs/react';
-import { 
-    LayoutDashboard, 
-    Tags, 
-    Receipt, 
-    Shirt, 
-    Ruler, 
-    BarChart3, 
-    LogOut, 
-    ExternalLink, 
-    Menu, 
-    X 
+import {
+    LayoutDashboard,
+    Tags,
+    Receipt,
+    Shirt,
+    Ruler,
+    BarChart3,
+    LogOut,
+    ExternalLink,
+    Menu,
+    X
 } from 'lucide-react';
 
 const NAV = [
-    { name: 'Dashboard', href: '/admin', icon: LayoutDashboard, filament: true, match: (p) => p === '/admin' || p === '/admin/' },
+    { name: 'Dashboard', href: '/admin', icon: LayoutDashboard, filament: false, match: (p) => p === '/admin' || p === '/admin/' || p === '/admin/dashboard' },
     { name: 'Categories', href: '/admin/categories', icon: Tags, filament: true, match: (p) => p.startsWith('/admin/categories') },
-    { name: 'Orders', href: '/admin/orders', icon: Receipt, filament: true, match: (p) => p.startsWith('/admin/orders') },
+    { name: 'Orders', href: '/admin/orders', icon: Receipt, filament: false, match: (p) => p.startsWith('/admin/orders') },
     { name: 'Products', href: '/admin/products', icon: Shirt, filament: false, match: (p) => p.startsWith('/admin/products') },
     { name: 'Sizes', href: '/admin/sizes', icon: Ruler, filament: true, match: (p) => p.startsWith('/admin/sizes') },
     { name: 'Statistiques', href: '/admin/stats', icon: BarChart3, filament: false, match: (p) => p.startsWith('/admin/stats') },
@@ -50,9 +50,9 @@ export default function AdminLayout({ children }) {
     return (
         <div className="adm">
             {/* Dark Backdrop for Mobile Drawer */}
-            <div 
+            <div
                 className={`adm-backdrop ${mobileOpen ? 'is-open' : ''}`}
-                onClick={() => setMobileOpen(false)} 
+                onClick={() => setMobileOpen(false)}
             />
 
             {/* Sidebar (Desktop Fixed + Mobile Slide Drawer) */}

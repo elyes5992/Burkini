@@ -66,58 +66,65 @@ export default function Form({ categories, availableSizes, product }) {
         post(isEditing ? route('admin.products.update', product.id) : route('admin.products.store'));
     };
 
-    const cls = (base, key) => `${base}${errors[key] ? ' is-error' : ''}`;
+    const inputCls = (key) =>
+        `w-full h-[42px] bg-adm-panel text-adm-text border rounded-xl px-3.5 text-sm focus:outline-none transition ${
+            errors[key] ? 'border-adm-bad' : 'border-adm-line focus:border-adm-accent'
+        }`;
+
     const existingPrimary = product?.primary_image || null;
     const existingGallery = product?.existing_images || [];
 
     return (
         <AdminLayout>
             <form onSubmit={submit}>
-                <div className="adm-head">
+                {/* Header */}
+                <div className="flex flex-wrap items-end justify-between gap-4 mb-7">
                     <div>
-                        <Link href={route('admin.products.index')} className="adm-back">
+                        <Link href={route('admin.products.index')} className="inline-flex items-center gap-1.5 text-sm text-adm-muted hover:text-adm-text transition mb-2">
                             <ArrowLeft size={15} /> Produits
                         </Link>
-                        <h1 className="adm-title">{isEditing ? product.name : 'Nouveau produit'}</h1>
+                        <h1 className="text-2xl font-bold tracking-tight text-adm-text">{isEditing ? product.name : 'Nouveau produit'}</h1>
                     </div>
                 </div>
 
-                <div className="form-grid">
-                    {/* ---------- Main Column ---------- */}
-                    <div className="stack">
-                        <section className="card section">
-                            <h2>Informations</h2>
+                {/* 2-Column Responsive Form Layout */}
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 items-start">
+                    {/* Main Left Stack */}
+                    <div className="flex flex-col gap-5">
+                        {/* Information Section */}
+                        <div className="bg-adm-panel border border-adm-line rounded-2xl p-6">
+                            <h2 className="text-base font-bold text-adm-text mb-5">Informations</h2>
 
-                            <div className="cols">
-                                <div className="group">
-                                    <label>Nom du produit</label>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-semibold text-adm-muted mb-1.5">Nom du produit</label>
                                     <input
-                                        className={cls('field', 'name')}
+                                        className={inputCls('name')}
                                         type="text"
                                         value={data.name}
                                         onChange={handleNameChange}
                                         placeholder="ex : Sm51 Maillot non voilé"
                                     />
-                                    {errors.name && <p className="err">{errors.name}</p>}
+                                    {errors.name && <p className="text-xs text-adm-bad mt-1.5">{errors.name}</p>}
                                 </div>
-                                <div className="group">
-                                    <label>Slug (URL)</label>
+                                <div>
+                                    <label className="block text-xs font-semibold text-adm-muted mb-1.5">Slug (URL)</label>
                                     <input
-                                        className={cls('field', 'slug')}
+                                        className={inputCls('slug')}
                                         type="text"
                                         value={data.slug}
                                         onChange={(e) => setData('slug', e.target.value)}
                                         placeholder="sm51-maillot-non-voile"
                                     />
-                                    {errors.slug && <p className="err">{errors.slug}</p>}
+                                    {errors.slug && <p className="text-xs text-adm-bad mt-1.5">{errors.slug}</p>}
                                 </div>
                             </div>
 
-                            <div className="cols">
-                                <div className="group">
-                                    <label>Catégorie</label>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                                <div>
+                                    <label className="block text-xs font-semibold text-adm-muted mb-1.5">Catégorie</label>
                                     <select
-                                        className={cls('select', 'category_id')}
+                                        className={inputCls('category_id')}
                                         value={data.category_id}
                                         onChange={(e) => setData('category_id', e.target.value)}
                                     >
@@ -126,12 +133,12 @@ export default function Form({ categories, availableSizes, product }) {
                                             <option key={c.id} value={c.id}>{c.name}</option>
                                         ))}
                                     </select>
-                                    {errors.category_id && <p className="err">{errors.category_id}</p>}
+                                    {errors.category_id && <p className="text-xs text-adm-bad mt-1.5">{errors.category_id}</p>}
                                 </div>
-                                <div className="group">
-                                    <label>Badge</label>
+                                <div>
+                                    <label className="block text-xs font-semibold text-adm-muted mb-1.5">Badge</label>
                                     <select
-                                        className="select"
+                                        className={inputCls('tag')}
                                         value={data.tag}
                                         onChange={(e) => setData('tag', e.target.value)}
                                     >
@@ -143,87 +150,93 @@ export default function Form({ categories, availableSizes, product }) {
                                 </div>
                             </div>
 
-                            <div className="group">
-                                <label>Description</label>
+                            <div className="mt-4">
+                                <label className="block text-xs font-semibold text-adm-muted mb-1.5">Description</label>
                                 <textarea
-                                    className={cls('textarea', 'description')}
+                                    className={`w-full bg-adm-panel text-adm-text border rounded-xl p-3.5 text-sm focus:outline-none transition min-h-[120px] ${
+                                        errors.description ? 'border-adm-bad' : 'border-adm-line focus:border-adm-accent'
+                                    }`}
                                     rows={5}
                                     value={data.description}
                                     onChange={(e) => setData('description', e.target.value)}
                                     placeholder="Coupe, matière, entretien…"
                                 />
-                                {errors.description && <p className="err">{errors.description}</p>}
+                                {errors.description && <p className="text-xs text-adm-bad mt-1.5">{errors.description}</p>}
                             </div>
-                        </section>
+                        </div>
 
-                        <section className="card section">
-                            <h2>Prix</h2>
-                            <div className="cols">
-                                <div className="group">
-                                    <label>Prix de vente (TND)</label>
+                        {/* Pricing Section */}
+                        <div className="bg-adm-panel border border-adm-line rounded-2xl p-6">
+                            <h2 className="text-base font-bold text-adm-text mb-5">Prix</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-semibold text-adm-muted mb-1.5">Prix de vente (TND)</label>
                                     <input
-                                        className={cls('field', 'price')}
+                                        className={inputCls('price')}
                                         type="number"
                                         step="0.001"
                                         value={data.price}
                                         onChange={(e) => setData('price', e.target.value)}
                                         placeholder="129.000"
                                     />
-                                    {errors.price && <p className="err">{errors.price}</p>}
+                                    {errors.price && <p className="text-xs text-adm-bad mt-1.5">{errors.price}</p>}
                                 </div>
 
                                 {data.tag === 'promo' && (
-                                    <div className="group">
-                                        <label>Ancien prix barré (TND)</label>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-adm-muted mb-1.5">Ancien prix barré (TND)</label>
                                         <input
-                                            className={cls('field', 'original_price')}
+                                            className={inputCls('original_price')}
                                             type="number"
                                             step="0.001"
                                             value={data.original_price}
                                             onChange={(e) => setData('original_price', e.target.value)}
                                             placeholder="169.000"
                                         />
-                                        {errors.original_price && <p className="err">{errors.original_price}</p>}
+                                        {errors.original_price && <p className="text-xs text-adm-bad mt-1.5">{errors.original_price}</p>}
                                     </div>
                                 )}
                             </div>
-                        </section>
+                        </div>
 
-                        <section className="card section">
-                            <h2>Tailles disponibles</h2>
-                            <div className="size-grid">
+                        {/* Sizes Section */}
+                        <div className="bg-adm-panel border border-adm-line rounded-2xl p-6">
+                            <h2 className="text-base font-bold text-adm-text mb-5">Tailles disponibles</h2>
+                            <div className="flex flex-wrap gap-2">
                                 {availableSizes.map((s) => (
                                     <button
                                         type="button"
                                         key={s.id}
-                                        aria-pressed={data.sizes.includes(s.id)}
-                                        className={`size ${data.sizes.includes(s.id) ? 'on' : ''}`}
                                         onClick={() => toggleSize(s.id)}
+                                        className={`min-w-[50px] h-10 px-3.5 rounded-xl text-sm font-semibold border transition ${
+                                            data.sizes.includes(s.id)
+                                                ? 'bg-adm-accent-soft border-adm-accent text-adm-accent'
+                                                : 'bg-transparent border-adm-line-2 text-adm-muted hover:border-adm-faint hover:text-adm-text'
+                                        }`}
                                     >
                                         {s.name}
                                     </button>
                                 ))}
                             </div>
-                        </section>
+                        </div>
 
-                        {/* ---------- Gallery / Other Photos ---------- */}
-                        <section className="card section">
-                            <h2>Autres photos (Galerie)</h2>
+                        {/* Gallery Section */}
+                        <div className="bg-adm-panel border border-adm-line rounded-2xl p-6">
+                            <h2 className="text-base font-bold text-adm-text mb-5">Autres photos (Galerie)</h2>
 
                             {existingGallery.length > 0 && (
                                 <>
-                                    <p className="photo-label">Photos secondaires actuelles ({existingGallery.length})</p>
-                                    <div className="photos">
+                                    <p className="text-xs font-semibold text-adm-muted mb-2.5">Photos secondaires actuelles ({existingGallery.length})</p>
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3 mb-4">
                                         {existingGallery.map((img) => (
-                                            <div key={img.id} className="photo">
-                                                <img src={img.url} alt="" />
+                                            <div key={img.id} className="group relative aspect-[3/4] rounded-xl overflow-hidden bg-adm-raise border border-adm-line">
+                                                <img src={img.url} alt="" className="w-full h-full object-cover" />
                                                 <button
                                                     type="button"
-                                                    className="photo-del"
-                                                    aria-label="Supprimer la photo"
                                                     onClick={() => deleteExisting(img)}
+                                                    className="absolute top-1.5 right-1.5 w-7 h-7 rounded-lg bg-black/80 text-white grid place-items-center opacity-0 group-hover:opacity-100 hover:bg-adm-bad transition"
                                                 >
-                                                    <Trash2 size={14} />
+                                                    <Trash2 size={13} />
                                                 </button>
                                             </div>
                                         ))}
@@ -233,106 +246,128 @@ export default function Form({ categories, availableSizes, product }) {
 
                             {galleryPreviews.length > 0 && (
                                 <>
-                                    <p className="photo-label">Nouvelles photos à ajouter ({galleryPreviews.length})</p>
-                                    <div className="photos">
+                                    <p className="text-xs font-semibold text-adm-ok mb-2.5">Nouvelles photos à ajouter ({galleryPreviews.length})</p>
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3 mb-4">
                                         {galleryPreviews.map((url, i) => (
-                                            <div key={i} className="photo new">
-                                                <img src={url} alt="" />
+                                            <div key={i} className="aspect-[3/4] rounded-xl overflow-hidden bg-adm-raise border-2 border-adm-ok">
+                                                <img src={url} alt="" className="w-full h-full object-cover" />
                                             </div>
                                         ))}
                                     </div>
                                 </>
                             )}
 
-                            <label className="drop">
-                                <Upload size={22} />
-                                <b>Ajouter des photos à la galerie</b>
-                                <small>PNG, JPG ou WEBP, 10 Mo max par photo</small>
-                                <input type="file" multiple accept="image/*" onChange={handleGalleryImages} />
+                            <label className="flex flex-col items-center gap-1 p-8 border-2 border-dashed border-adm-line-2 hover:border-adm-accent hover:bg-adm-accent-soft rounded-2xl text-adm-muted cursor-pointer transition text-center">
+                                <Upload size={22} className="text-adm-faint mb-1" />
+                                <b className="text-adm-text text-sm">Ajouter des photos à la galerie</b>
+                                <small className="text-xs text-adm-faint">PNG, JPG ou WEBP, 10 Mo max</small>
+                                <input type="file" multiple accept="image/*" className="hidden" onChange={handleGalleryImages} />
                             </label>
-                            {errors.images && <p className="err">{errors.images}</p>}
-                        </section>
+                            {errors.images && <p className="text-xs text-adm-bad mt-1.5">{errors.images}</p>}
+                        </div>
                     </div>
 
-                    {/* ---------- Sidebar Column ---------- */}
-                    <aside className="aside">
+                    {/* Sidebar Right Stack */}
+                    <div className="sticky top-6 flex flex-col gap-5">
                         {/* Principal Image Card */}
-                        <div className="card section">
-                            <h2>Image principale</h2>
+                        <div className="bg-adm-panel border border-adm-line rounded-2xl p-6">
+                            <h2 className="text-base font-bold text-adm-text mb-4">Image principale</h2>
 
-                            {(primaryPreview || existingPrimary?.url) ? (
-                                <div className="primary-photo-box">
-                                    <span className="primary-tag">
+                            {(primaryPreview || existingPrimary?.url) && (
+                                <div className="group relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-adm-raise border border-adm-line mb-3">
+                                    <span className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-md bg-black/85 backdrop-blur-sm text-adm-accent border border-adm-accent text-[11px] font-bold flex items-center gap-1 z-10">
                                         <Star size={11} fill="currentColor" /> Principale
                                     </span>
-                                    <img src={primaryPreview || existingPrimary.url} alt="Principale" />
+                                    <img src={primaryPreview || existingPrimary.url} alt="Principale" className="w-full h-full object-cover" />
                                     {existingPrimary && !primaryPreview && (
                                         <button
                                             type="button"
-                                            className="photo-del"
-                                            aria-label="Supprimer photo principale"
                                             onClick={() => deleteExisting(existingPrimary)}
+                                            className="absolute top-2.5 right-2.5 w-7 h-7 rounded-lg bg-black/80 text-white grid place-items-center opacity-0 group-hover:opacity-100 hover:bg-adm-bad transition"
                                         >
-                                            <Trash2 size={14} />
+                                            <Trash2 size={13} />
                                         </button>
                                     )}
                                 </div>
-                            ) : null}
+                            )}
 
-                            <label className="drop compact">
-                                <Upload size={18} />
-                                <b>{(primaryPreview || existingPrimary) ? 'Remplacer l’image' : 'Importer image principale'}</b>
-                                <small>Couverture du produit</small>
-                                <input type="file" accept="image/*" onChange={handlePrimaryImage} />
+                            <label className="flex flex-col items-center gap-1 p-4 border border-dashed border-adm-line-2 hover:border-adm-accent hover:bg-adm-accent-soft rounded-xl text-adm-muted cursor-pointer transition text-center">
+                                <Upload size={18} className="text-adm-faint" />
+                                <b className="text-xs text-adm-text font-semibold">
+                                    {(primaryPreview || existingPrimary) ? 'Remplacer l’image' : 'Importer image principale'}
+                                </b>
+                                <small className="text-[11px] text-adm-faint">Photo de couverture</small>
+                                <input type="file" accept="image/*" className="hidden" onChange={handlePrimaryImage} />
                             </label>
-                            {errors.primary_image && <p className="err">{errors.primary_image}</p>}
+                            {errors.primary_image && <p className="text-xs text-adm-bad mt-1.5">{errors.primary_image}</p>}
                         </div>
 
                         {/* Visibility & Actions Card */}
-                        <div className="card section">
-                            <h2>Visibilité</h2>
+                        <div className="bg-adm-panel border border-adm-line rounded-2xl p-6">
+                            <h2 className="text-base font-bold text-adm-text mb-4">Visibilité</h2>
 
-                            <div className="toggle-row">
+                            <div className="flex items-center justify-between gap-4 py-3 border-b border-adm-line">
                                 <div>
-                                    <b>Produit actif</b>
-                                    <span>Visible par les clients</span>
+                                    <b className="block text-sm font-semibold text-adm-text">Produit actif</b>
+                                    <span className="text-xs text-adm-faint">Visible en boutique</span>
                                 </div>
                                 <button
                                     type="button"
                                     role="switch"
                                     aria-checked={data.is_active}
-                                    aria-label="Produit actif"
-                                    className={`switch ${data.is_active ? 'on' : ''}`}
                                     onClick={() => setData('is_active', !data.is_active)}
-                                />
+                                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${
+                                        data.is_active ? 'bg-adm-accent' : 'bg-adm-line-2'
+                                    }`}
+                                >
+                                    <span
+                                        className={`pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out mt-[3px] ml-[3px] ${
+                                            data.is_active ? 'translate-x-4 !bg-[#17130a]' : 'translate-x-0'
+                                        }`}
+                                    />
+                                </button>
                             </div>
 
-                            <div className="toggle-row">
+                            <div className="flex items-center justify-between gap-4 py-3">
                                 <div>
-                                    <b>Page d'accueil</b>
-                                    <span>Afficher dans « Pièces maîtresses »</span>
+                                    <b className="block text-sm font-semibold text-adm-text">Page d'accueil</b>
+                                    <span className="text-xs text-adm-faint">Pièces maîtresses</span>
                                 </div>
                                 <button
                                     type="button"
                                     role="switch"
                                     aria-checked={data.front_page}
-                                    aria-label="Afficher sur la page d'accueil"
-                                    className={`switch ${data.front_page ? 'on' : ''}`}
                                     onClick={() => setData('front_page', !data.front_page)}
-                                />
+                                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${
+                                        data.front_page ? 'bg-adm-accent' : 'bg-adm-line-2'
+                                    }`}
+                                >
+                                    <span
+                                        className={`pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out mt-[3px] ml-[3px] ${
+                                            data.front_page ? 'translate-x-4 !bg-[#17130a]' : 'translate-x-0'
+                                        }`}
+                                    />
+                                </button>
                             </div>
 
-                            <div className="aside-actions">
-                                <button type="submit" className="btn btn-primary" disabled={processing}>
+                            <div className="flex flex-col gap-2.5 mt-5">
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="w-full h-10 rounded-xl bg-adm-accent hover:bg-[#e4b255] text-[#17130a] font-semibold text-sm flex items-center justify-center gap-2 transition disabled:opacity-50"
+                                >
                                     <Save size={16} />
                                     {processing ? 'Enregistrement…' : 'Enregistrer'}
                                 </button>
-                                <Link href={route('admin.products.index')} className="btn">
+                                <Link
+                                    href={route('admin.products.index')}
+                                    className="w-full h-10 rounded-xl border border-adm-line-2 hover:bg-adm-raise text-adm-text font-semibold text-sm flex items-center justify-center transition"
+                                >
                                     Annuler
                                 </Link>
                             </div>
                         </div>
-                    </aside>
+                    </div>
                 </div>
             </form>
         </AdminLayout>

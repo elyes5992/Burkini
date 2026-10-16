@@ -10,6 +10,8 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Admin\StatsController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 
 
 
@@ -52,22 +54,31 @@ Route::get('/guide-des-tailles', function () {
 })->name('guide-tailles');
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-        Route::get('/stats', [StatsController::class, 'index'])->name('admin.stats');
-        // 🔥 AJOUTÉ : Parcours d'un visiteur
-        Route::get('/stats/visitor/{visitorId}/journey', [StatsController::class, 'visitorJourney'])
-            ->name('admin.stats.visitor.journey');
-        Route::get('/products', [AdminProductController::class, 'index'])->name('products.index');
-        Route::get('/products/create', [AdminProductController::class, 'create'])->name('products.create');
-        Route::post('/products', [AdminProductController::class, 'store'])->name('products.store');
-        Route::get('/products/{product}/edit', [AdminProductController::class, 'edit'])->name('products.edit');
-        Route::post('/products/{product}', [AdminProductController::class, 'update'])->name('products.update'); // POST for multipart/form-data support
-        Route::delete('/products/{product}', [AdminProductController::class, 'destroy'])->name('products.destroy');
 
-        // Quick inline toggles & image removal
-        Route::patch('/products/{product}/toggle-active', [AdminProductController::class, 'toggleActive'])->name('products.toggle-active');
-        Route::patch('/products/{product}/toggle-front-page', [AdminProductController::class, 'toggleFrontPage'])->name('products.toggle-front-page');
-        Route::delete('/products/{product}/images/{mediaId}', [AdminProductController::class, 'deleteImage'])->name('products.images.delete');
-    });
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::get('/stats', [StatsController::class, 'index'])->name('admin.stats');
+    // 🔥 AJOUTÉ : Parcours d'un visiteur
+    Route::get('/stats/visitor/{visitorId}/journey', [StatsController::class, 'visitorJourney'])
+        ->name('admin.stats.visitor.journey');
+    Route::get('/products', [AdminProductController::class, 'index'])->name('products.index');
+    Route::get('/products/create', [AdminProductController::class, 'create'])->name('products.create');
+    Route::post('/products', [AdminProductController::class, 'store'])->name('products.store');
+    Route::get('/products/{product}/edit', [AdminProductController::class, 'edit'])->name('products.edit');
+    Route::post('/products/{product}', [AdminProductController::class, 'update'])->name('products.update'); // POST for multipart/form-data support
+    Route::delete('/products/{product}', [AdminProductController::class, 'destroy'])->name('products.destroy');
+
+    // Quick inline toggles & image removal
+    Route::patch('/products/{product}/toggle-active', [AdminProductController::class, 'toggleActive'])->name('products.toggle-active');
+    Route::patch('/products/{product}/toggle-front-page', [AdminProductController::class, 'toggleFrontPage'])->name('products.toggle-front-page');
+    Route::delete('/products/{product}/images/{mediaId}', [AdminProductController::class, 'deleteImage'])->name('products.images.delete');
+
+    Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}/edit', [AdminOrderController::class, 'edit'])->name('orders.edit');
+    Route::put('/orders/{order}', [AdminOrderController::class, 'update'])->name('orders.update');
+    Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.status');
+    Route::delete('/orders/{order}', [AdminOrderController::class, 'destroy'])->name('orders.destroy');
+});
 
 
 
