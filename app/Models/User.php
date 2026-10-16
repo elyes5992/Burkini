@@ -17,6 +17,7 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
+        'is_admin', // 🔥 Added
     ];
 
     protected $hidden = [
@@ -28,14 +29,24 @@ class User extends Authenticatable implements FilamentUser
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'          => 'hashed',
+            'is_admin'          => 'boolean', // 🔥 Cast to true/false
         ];
     }
 
+    /**
+     * Check if the user is an administrator
+     */
+    public function isAdmin(): bool
+    {
+        return (bool) $this->is_admin;
+    }
+
+    /**
+     * Filament Panel restriction: ONLY admins can enter
+     */
     public function canAccessPanel(Panel $panel): bool
     {
-        return true; // allows all authenticated users
-        // or restrict by email:
-        // return $this->email === 'admin@admin.com';
+        return $this->isAdmin();
     }
 }

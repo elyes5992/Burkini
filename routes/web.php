@@ -9,28 +9,16 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Admin\StatsController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
 
 
 
-
-Route::any('/debug-upload', function (\Illuminate\Http\Request $request) {
-    if ($request->isMethod('post')) {
-        return response()->json([
-            'files' => $_FILES,
-            'has_file' => $request->hasFile('testfile'),
-            'is_valid' => $request->hasFile('testfile') ? $request->file('testfile')->isValid() : null,
-            'error_code' => $_FILES['testfile']['error'] ?? null,
-        ]);
-    }
-    return '<form method="POST" enctype="multipart/form-data">
-        <input type="file" name="testfile">
-        <button type="submit">Upload</button>
-    </form>';
-});
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -42,7 +30,10 @@ Route::get('/produits', [ProductController::class, 'products'])->name('products'
 Route::get('/a-propos', [ProductController::class, 'about'])->name('about');
 Route::get('/produit/{id}', [ProductController::class, 'show'])->name('product.show');
 
-Route::get('/chemises', [ProductController::class, 'chemises'])->name('chemises'); 
+Route::get('/pyjamas', [ProductController::class, 'pyjamas'])->name('pyjamas');
+Route::get('/survetements', [ProductController::class, 'survetements'])->name('survetements');
+
+Route::get('/chemises', [ProductController::class, 'chemises'])->name('chemises');
 
 Route::get('/panier', [CartController::class, 'index'])->name('cart');
 Route::post('/panier/ajouter', [CartController::class, 'add'])->name('cart.add');
@@ -60,13 +51,22 @@ Route::get('/guide-des-tailles', function () {
     return Inertia::render('GuideTailles');
 })->name('guide-tailles');
 
-Route::middleware(['auth'])
-    ->prefix('admin')
-    ->group(function () {
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/stats', [StatsController::class, 'index'])->name('admin.stats');
         // 🔥 AJOUTÉ : Parcours d'un visiteur
         Route::get('/stats/visitor/{visitorId}/journey', [StatsController::class, 'visitorJourney'])
             ->name('admin.stats.visitor.journey');
+        Route::get('/products', [AdminProductController::class, 'index'])->name('products.index');
+        Route::get('/products/create', [AdminProductController::class, 'create'])->name('products.create');
+        Route::post('/products', [AdminProductController::class, 'store'])->name('products.store');
+        Route::get('/products/{product}/edit', [AdminProductController::class, 'edit'])->name('products.edit');
+        Route::post('/products/{product}', [AdminProductController::class, 'update'])->name('products.update'); // POST for multipart/form-data support
+        Route::delete('/products/{product}', [AdminProductController::class, 'destroy'])->name('products.destroy');
+
+        // Quick inline toggles & image removal
+        Route::patch('/products/{product}/toggle-active', [AdminProductController::class, 'toggleActive'])->name('products.toggle-active');
+        Route::patch('/products/{product}/toggle-front-page', [AdminProductController::class, 'toggleFrontPage'])->name('products.toggle-front-page');
+        Route::delete('/products/{product}/images/{mediaId}', [AdminProductController::class, 'deleteImage'])->name('products.images.delete');
     });
 
 
