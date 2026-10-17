@@ -30,9 +30,9 @@ class ProductController extends Controller
         }
 
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('slug', 'like', "%{$search}%");
+                    ->orWhere('slug', 'like', "%{$search}%");
             });
         }
 
@@ -51,7 +51,6 @@ class ProductController extends Controller
         $products = $query->paginate(15)
             ->withQueryString()
             ->through(function ($p) {
-                // Find thumbnail from Spatie, or old Filament relation, or direct column
                 $imgUrl = null;
                 if (method_exists($p, 'getFirstMediaUrl')) {
                     $imgUrl = $p->getFirstMediaUrl('images', 'thumb') ?: $p->getFirstMediaUrl('images');
@@ -123,6 +122,7 @@ class ProductController extends Controller
             'sizes'          => 'array',
             'sizes.*'        => 'exists:sizes,id',
             'primary_image'  => 'nullable|image|max:10240',
+            'images'         => 'nullable|array',
             'images.*'       => 'nullable|image|max:10240',
         ]);
 
@@ -136,7 +136,7 @@ class ProductController extends Controller
             $product->sizes()->sync($validated['sizes']);
         }
 
-        // Save Primary Image to Spatie Media Library
+        // Save Primary Image
         if ($request->hasFile('primary_image')) {
             $product->addMedia($request->file('primary_image'))
                 ->withCustomProperties(['is_primary' => true])
@@ -278,6 +278,7 @@ class ProductController extends Controller
             'sizes'          => 'array',
             'sizes.*'        => 'exists:sizes,id',
             'primary_image'  => 'nullable|image|max:10240',
+            'images'         => 'nullable|array',
             'images.*'       => 'nullable|image|max:10240',
         ]);
 
@@ -294,7 +295,6 @@ class ProductController extends Controller
         // Replace or set Primary Image
         if ($request->hasFile('primary_image')) {
             if (method_exists($product, 'getMedia')) {
-                // Clear old primary flag
                 foreach ($product->getMedia('images') as $m) {
                     if ($m->getCustomProperty('is_primary')) {
                         $m->setCustomProperty('is_primary', false);

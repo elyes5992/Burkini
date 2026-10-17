@@ -1,6 +1,6 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import { useForm, Link, router } from '@inertiajs/react';
-import { ArrowLeft, Save, Upload, Trash2, Star } from 'lucide-react';
+import { ArrowLeft, Save, Upload, Trash2, Star, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Form({ categories, availableSizes, product }) {
@@ -21,8 +21,9 @@ export default function Form({ categories, availableSizes, product }) {
         images: [],
     });
 
+    // Staging state for new images previews with their unique local IDs
     const [primaryPreview, setPrimaryPreview] = useState(null);
-    const [galleryPreviews, setGalleryPreviews] = useState([]);
+    const [newGalleryItems, setNewGalleryItems] = useState([]); // Array of { id, file, url }
 
     const handleNameChange = (e) => {
         const val = e.target.value;
@@ -35,35 +36,80 @@ export default function Form({ categories, availableSizes, product }) {
         }));
     };
 
+    // --- Primary Image Handlers ---
     const handlePrimaryImage = (e) => {
-        const file = e.target.files[0];
+        const file = e.target.files?.[0];
         if (file) {
+            if (primaryPreview) URL.revokeObjectURL(primaryPreview);
             setData('primary_image', file);
             setPrimaryPreview(URL.createObjectURL(file));
         }
+        e.target.value = '';
     };
 
+    const removeNewPrimaryImage = () => {
+        if (primaryPreview) URL.revokeObjectURL(primaryPreview);
+        setPrimaryPreview(null);
+        setData('primary_image', null);
+    };
+
+    // --- Gallery Images Handlers ---
     const handleGalleryImages = (e) => {
-        const files = Array.from(e.target.files);
-        setData('images', files);
-        setGalleryPreviews(files.map((f) => URL.createObjectURL(f)));
+        const files = Array.from(e.target.files || []);
+        if (!files.length) return;
+
+        const newItems = files.map((file) => ({
+            id: Math.random().toString(36).substring(2, 9),
+            file,
+            url: URL.createObjectURL(file),
+        }));
+
+        const updated = [...newGalleryItems, ...newItems];
+        setNewGalleryItems(updated);
+        setData('images', updated.map((item) => item.file));
+        e.target.value = ''; // Reset input to allow selecting the same files again if needed
     };
 
-    const toggleSize = (id) =>
-        setData('sizes', data.sizes.includes(id) ? data.sizes.filter((s) => s !== id) : [...data.sizes, id]);
+    const removeNewGalleryImage = (idToRemove) => {
+        const updated = newGalleryItems.filter((item) => {
+            if (item.id === idToRemove) {
+                URL.revokeObjectURL(item.url);
+                return false;
+            }
+            return true;
+        });
+        setNewGalleryItems(updated);
+        setData('images', updated.map((item) => item.file));
+    };
 
+    // --- Delete Existing Saved Image on the Server ---
     const deleteExisting = (imageItem) => {
         if (confirm('Supprimer définitivement cette image ?')) {
             router.delete(
-                route('admin.products.images.delete', [product.id, imageItem.id]) + `?source=${imageItem.source || 'media'}`,
+                route('admin.products.images.delete', [product.id, imageItem.id]) +
+                    `?source=${imageItem.source || 'media'}`,
                 { preserveScroll: true }
             );
         }
     };
 
+    const toggleSize = (id) =>
+        setData('sizes', data.sizes.includes(id) ? data.sizes.filter((s) => s !== id) : [...data.sizes, id]);
+
     const submit = (e) => {
         e.preventDefault();
-        post(isEditing ? route('admin.products.update', product.id) : route('admin.products.store'));
+        if (isEditing) {
+            router.post(
+                route('admin.products.update', product.id),
+                {
+                    _method: 'put',
+                    ...data,
+                },
+                { forceFormData: true }
+            );
+        } else {
+            post(route('admin.products.store'));
+        }
     };
 
     const inputCls = (key) =>
@@ -80,17 +126,156 @@ export default function Form({ categories, availableSizes, product }) {
                 {/* Header */}
                 <div className="flex flex-wrap items-end justify-between gap-4 mb-7">
                     <div>
-                        <Link href={route('admin.products.index')} className="inline-flex items-center gap-1.5 text-sm text-adm-muted hover:text-adm-text transition mb-2">
+                        <Link
+                            href={route('admin.products.index')}
+                            className="inline-flex items-center gap-1.5 text-sm text-adm-muted hover:text-adm-text transition mb-2"
+                        >
                             <ArrowLeft size={15} /> Produits
                         </Link>
-                        <h1 className="text-2xl font-bold tracking-tight text-adm-text">{isEditing ? product.name : 'Nouveau produit'}</h1>
+                        <h1 className="text-2xl font-bold tracking-tight text-adm-text">
+                            {isEditing ? product.name : 'Nouveau produit'}
+                        </h1>
                     </div>
                 </div>
 
                 {/* 2-Column Responsive Form Layout */}
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 items-start">
-                    {/* Main Left Stack */}
-                    <div className="flex flex-col gap-5">
+                    {/* Main Left Column */}
+                    <div className="flex flex-col gap-6">
+                        {/* ================= PHOTOS SECTION ================= */}
+                        <div className="bg-adm-panel border border-adm-line rounded-2xl p-6">
+                            <h2 className="text-base font-bold text-adm-text mb-4">Photos du produit</h2>
+
+                            {/* --- 1. PRINCIPAL IMAGE (PLACED ABOVE) --- */}
+                            <div className="p-4 rounded-xl border border-adm-line-2 bg-adm-raise/40 mb-6">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-2">
+                                        <Star size={16} className="text-adm-accent fill-adm-accent" />
+                                        <span className="text-sm font-bold text-adm-text">Image principale</span>
+                                    </div>
+                                    <span className="text-xs text-adm-muted">Photo de couverture principale</span>
+                                </div>
+
+                                {primaryPreview || existingPrimary?.url ? (
+                                    <div className="relative w-48 aspect-[3/4] rounded-xl overflow-hidden bg-adm-panel border border-adm-line mb-3 group">
+                                        <img
+                                            src={primaryPreview || existingPrimary.url}
+                                            alt="Principale"
+                                            className="w-full h-full object-cover"
+                                        />
+
+                                        {/* Delete button for newly staged primary image */}
+                                        {primaryPreview && (
+                                            <button
+                                                type="button"
+                                                onClick={removeNewPrimaryImage}
+                                                className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-red-600/90 text-white grid place-items-center hover:bg-red-700 transition shadow"
+                                                title="Supprimer cette nouvelle image"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        )}
+
+                                        {/* Delete button for existing saved primary image */}
+                                        {existingPrimary && !primaryPreview && (
+                                            <button
+                                                type="button"
+                                                onClick={() => deleteExisting(existingPrimary)}
+                                                className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-black/80 text-white grid place-items-center opacity-0 group-hover:opacity-100 hover:bg-red-600 transition shadow"
+                                                title="Supprimer l'image actuelle"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        )}
+                                    </div>
+                                ) : null}
+
+                                <label className="inline-flex items-center gap-2 px-4 py-2 border border-dashed border-adm-line-2 hover:border-adm-accent rounded-xl text-xs font-semibold text-adm-text cursor-pointer hover:bg-adm-accent-soft transition">
+                                    <Upload size={14} />
+                                    <span>
+                                        {primaryPreview || existingPrimary
+                                            ? "Remplacer l'image principale"
+                                            : "Choisir l'image principale"}
+                                    </span>
+                                    <input type="file" accept="image/*" className="hidden" onChange={handlePrimaryImage} />
+                                </label>
+                                {errors.primary_image && (
+                                    <p className="text-xs text-adm-bad mt-1.5">{errors.primary_image}</p>
+                                )}
+                            </div>
+
+                            {/* --- 2. SECONDARY / GALLERY IMAGES (BELOW THE PRINCIPAL) --- */}
+                            <div className="p-4 rounded-xl border border-adm-line-2 bg-adm-raise/40">
+                                <div className="flex items-center justify-between mb-3">
+                                    <span className="text-sm font-bold text-adm-text">Images secondaires</span>
+                                    <span className="text-xs text-adm-muted">
+                                        Total: {existingGallery.length + newGalleryItems.length} photo(s)
+                                    </span>
+                                </div>
+
+                                {/* Images Grid */}
+                                {(existingGallery.length > 0 || newGalleryItems.length > 0) && (
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3.5 mb-4">
+                                        {/* Existing saved secondary images */}
+                                        {existingGallery.map((img) => (
+                                            <div
+                                                key={img.id}
+                                                className="group relative aspect-[3/4] rounded-xl overflow-hidden bg-adm-panel border border-adm-line"
+                                            >
+                                                <img src={img.url} alt="" className="w-full h-full object-cover" />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => deleteExisting(img)}
+                                                    className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-black/80 text-white grid place-items-center opacity-0 group-hover:opacity-100 hover:bg-red-600 transition shadow"
+                                                    title="Supprimer cette image"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </div>
+                                        ))}
+
+                                        {/* Newly added gallery images */}
+                                        {newGalleryItems.map((item) => (
+                                            <div
+                                                key={item.id}
+                                                className="group relative aspect-[3/4] rounded-xl overflow-hidden bg-adm-panel border-2 border-emerald-500/80"
+                                            >
+                                                <img src={item.url} alt="" className="w-full h-full object-cover" />
+                                                {/* Delete button for new image before upload */}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeNewGalleryImage(item.id)}
+                                                    className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-red-600/95 text-white grid place-items-center hover:bg-red-700 transition shadow"
+                                                    title="Retirer cette image"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Add more secondary images upload button */}
+                                <label className="flex flex-col items-center justify-center gap-1.5 p-6 border-2 border-dashed border-adm-line-2 hover:border-adm-accent hover:bg-adm-accent-soft/40 rounded-xl text-adm-muted cursor-pointer transition text-center">
+                                    <div className="w-8 h-8 rounded-full bg-adm-panel border border-adm-line flex items-center justify-center text-adm-accent">
+                                        <Plus size={16} />
+                                    </div>
+                                    <b className="text-adm-text text-xs">Ajouter des images secondaires</b>
+                                    <small className="text-[11px] text-adm-faint">
+                                        Sélection multiple acceptée (PNG, JPG, WEBP)
+                                    </small>
+                                    <input
+                                        type="file"
+                                        multiple
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={handleGalleryImages}
+                                    />
+                                </label>
+                                {errors.images && <p className="text-xs text-adm-bad mt-1.5">{errors.images}</p>}
+                            </div>
+                        </div>
+
                         {/* Information Section */}
                         <div className="bg-adm-panel border border-adm-line rounded-2xl p-6">
                             <h2 className="text-base font-bold text-adm-text mb-5">Informations</h2>
@@ -130,10 +315,14 @@ export default function Form({ categories, availableSizes, product }) {
                                     >
                                         <option value="">Choisir une catégorie</option>
                                         {categories.map((c) => (
-                                            <option key={c.id} value={c.id}>{c.name}</option>
+                                            <option key={c.id} value={c.id}>
+                                                {c.name}
+                                            </option>
                                         ))}
                                     </select>
-                                    {errors.category_id && <p className="text-xs text-adm-bad mt-1.5">{errors.category_id}</p>}
+                                    {errors.category_id && (
+                                        <p className="text-xs text-adm-bad mt-1.5">{errors.category_id}</p>
+                                    )}
                                 </div>
                                 <div>
                                     <label className="block text-xs font-semibold text-adm-muted mb-1.5">Badge</label>
@@ -154,14 +343,18 @@ export default function Form({ categories, availableSizes, product }) {
                                 <label className="block text-xs font-semibold text-adm-muted mb-1.5">Description</label>
                                 <textarea
                                     className={`w-full bg-adm-panel text-adm-text border rounded-xl p-3.5 text-sm focus:outline-none transition min-h-[120px] ${
-                                        errors.description ? 'border-adm-bad' : 'border-adm-line focus:border-adm-accent'
+                                        errors.description
+                                            ? 'border-adm-bad'
+                                            : 'border-adm-line focus:border-adm-accent'
                                     }`}
                                     rows={5}
                                     value={data.description}
                                     onChange={(e) => setData('description', e.target.value)}
                                     placeholder="Coupe, matière, entretien…"
                                 />
-                                {errors.description && <p className="text-xs text-adm-bad mt-1.5">{errors.description}</p>}
+                                {errors.description && (
+                                    <p className="text-xs text-adm-bad mt-1.5">{errors.description}</p>
+                                )}
                             </div>
                         </div>
 
@@ -170,7 +363,9 @@ export default function Form({ categories, availableSizes, product }) {
                             <h2 className="text-base font-bold text-adm-text mb-5">Prix</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-semibold text-adm-muted mb-1.5">Prix de vente (TND)</label>
+                                    <label className="block text-xs font-semibold text-adm-muted mb-1.5">
+                                        Prix de vente (TND)
+                                    </label>
                                     <input
                                         className={inputCls('price')}
                                         type="number"
@@ -184,7 +379,9 @@ export default function Form({ categories, availableSizes, product }) {
 
                                 {data.tag === 'promo' && (
                                     <div>
-                                        <label className="block text-xs font-semibold text-adm-muted mb-1.5">Ancien prix barré (TND)</label>
+                                        <label className="block text-xs font-semibold text-adm-muted mb-1.5">
+                                            Ancien prix barré (TND)
+                                        </label>
                                         <input
                                             className={inputCls('original_price')}
                                             type="number"
@@ -193,7 +390,9 @@ export default function Form({ categories, availableSizes, product }) {
                                             onChange={(e) => setData('original_price', e.target.value)}
                                             placeholder="169.000"
                                         />
-                                        {errors.original_price && <p className="text-xs text-adm-bad mt-1.5">{errors.original_price}</p>}
+                                        {errors.original_price && (
+                                            <p className="text-xs text-adm-bad mt-1.5">{errors.original_price}</p>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -219,92 +418,13 @@ export default function Form({ categories, availableSizes, product }) {
                                 ))}
                             </div>
                         </div>
-
-                        {/* Gallery Section */}
-                        <div className="bg-adm-panel border border-adm-line rounded-2xl p-6">
-                            <h2 className="text-base font-bold text-adm-text mb-5">Autres photos (Galerie)</h2>
-
-                            {existingGallery.length > 0 && (
-                                <>
-                                    <p className="text-xs font-semibold text-adm-muted mb-2.5">Photos secondaires actuelles ({existingGallery.length})</p>
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3 mb-4">
-                                        {existingGallery.map((img) => (
-                                            <div key={img.id} className="group relative aspect-[3/4] rounded-xl overflow-hidden bg-adm-raise border border-adm-line">
-                                                <img src={img.url} alt="" className="w-full h-full object-cover" />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => deleteExisting(img)}
-                                                    className="absolute top-1.5 right-1.5 w-7 h-7 rounded-lg bg-black/80 text-white grid place-items-center opacity-0 group-hover:opacity-100 hover:bg-adm-bad transition"
-                                                >
-                                                    <Trash2 size={13} />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </>
-                            )}
-
-                            {galleryPreviews.length > 0 && (
-                                <>
-                                    <p className="text-xs font-semibold text-adm-ok mb-2.5">Nouvelles photos à ajouter ({galleryPreviews.length})</p>
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3 mb-4">
-                                        {galleryPreviews.map((url, i) => (
-                                            <div key={i} className="aspect-[3/4] rounded-xl overflow-hidden bg-adm-raise border-2 border-adm-ok">
-                                                <img src={url} alt="" className="w-full h-full object-cover" />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </>
-                            )}
-
-                            <label className="flex flex-col items-center gap-1 p-8 border-2 border-dashed border-adm-line-2 hover:border-adm-accent hover:bg-adm-accent-soft rounded-2xl text-adm-muted cursor-pointer transition text-center">
-                                <Upload size={22} className="text-adm-faint mb-1" />
-                                <b className="text-adm-text text-sm">Ajouter des photos à la galerie</b>
-                                <small className="text-xs text-adm-faint">PNG, JPG ou WEBP, 10 Mo max</small>
-                                <input type="file" multiple accept="image/*" className="hidden" onChange={handleGalleryImages} />
-                            </label>
-                            {errors.images && <p className="text-xs text-adm-bad mt-1.5">{errors.images}</p>}
-                        </div>
                     </div>
 
-                    {/* Sidebar Right Stack */}
+                    {/* Sidebar Right Column */}
                     <div className="sticky top-6 flex flex-col gap-5">
-                        {/* Principal Image Card */}
-                        <div className="bg-adm-panel border border-adm-line rounded-2xl p-6">
-                            <h2 className="text-base font-bold text-adm-text mb-4">Image principale</h2>
-
-                            {(primaryPreview || existingPrimary?.url) && (
-                                <div className="group relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-adm-raise border border-adm-line mb-3">
-                                    <span className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-md bg-black/85 backdrop-blur-sm text-adm-accent border border-adm-accent text-[11px] font-bold flex items-center gap-1 z-10">
-                                        <Star size={11} fill="currentColor" /> Principale
-                                    </span>
-                                    <img src={primaryPreview || existingPrimary.url} alt="Principale" className="w-full h-full object-cover" />
-                                    {existingPrimary && !primaryPreview && (
-                                        <button
-                                            type="button"
-                                            onClick={() => deleteExisting(existingPrimary)}
-                                            className="absolute top-2.5 right-2.5 w-7 h-7 rounded-lg bg-black/80 text-white grid place-items-center opacity-0 group-hover:opacity-100 hover:bg-adm-bad transition"
-                                        >
-                                            <Trash2 size={13} />
-                                        </button>
-                                    )}
-                                </div>
-                            )}
-
-                            <label className="flex flex-col items-center gap-1 p-4 border border-dashed border-adm-line-2 hover:border-adm-accent hover:bg-adm-accent-soft rounded-xl text-adm-muted cursor-pointer transition text-center">
-                                <Upload size={18} className="text-adm-faint" />
-                                <b className="text-xs text-adm-text font-semibold">
-                                    {(primaryPreview || existingPrimary) ? 'Remplacer l’image' : 'Importer image principale'}
-                                </b>
-                                <small className="text-[11px] text-adm-faint">Photo de couverture</small>
-                                <input type="file" accept="image/*" className="hidden" onChange={handlePrimaryImage} />
-                            </label>
-                            {errors.primary_image && <p className="text-xs text-adm-bad mt-1.5">{errors.primary_image}</p>}
-                        </div>
-
                         {/* Visibility & Actions Card */}
                         <div className="bg-adm-panel border border-adm-line rounded-2xl p-6">
-                            <h2 className="text-base font-bold text-adm-text mb-4">Visibilité</h2>
+                            <h2 className="text-base font-bold text-adm-text mb-4">Visibilité & Enregistrement</h2>
 
                             <div className="flex items-center justify-between gap-4 py-3 border-b border-adm-line">
                                 <div>
@@ -357,7 +477,7 @@ export default function Form({ categories, availableSizes, product }) {
                                     className="w-full h-10 rounded-xl bg-adm-accent hover:bg-[#e4b255] text-[#17130a] font-semibold text-sm flex items-center justify-center gap-2 transition disabled:opacity-50"
                                 >
                                     <Save size={16} />
-                                    {processing ? 'Enregistrement…' : 'Enregistrer'}
+                                    {processing ? 'Enregistrement…' : 'Enregistrer le produit'}
                                 </button>
                                 <Link
                                     href={route('admin.products.index')}
