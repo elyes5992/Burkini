@@ -4,7 +4,7 @@ import { EyeOff, Eye } from 'lucide-react';
 import DateRangePicker from '../../Components/Admin/DateRangePicker';
 import FunnelCards from '../../Components/Admin/FunnelCards';
 import LiveVisitorsTable from '../../Components/Admin/LiveVisitorsTable';
-import FunnelBar from '../../Components/Admin/FunnelBar';
+
 import TrafficChart from '../../Components/Admin/TrafficChart';
 
 export default function Stats({ funnel, visitors, daily, range, start, end, recentVisitors, filters }) {
