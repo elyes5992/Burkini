@@ -1,5 +1,4 @@
 <?php
-// app/Http/Controllers/Admin/StatsController.php
 
 namespace App\Http\Controllers\Admin;
 
@@ -62,6 +61,37 @@ class StatsController extends Controller
                 ORDER BY ve2.created_at DESC
                 LIMIT 1
             ) as cart_product_name", [VisitorEvent::TYPE_ADD_TO_CART])
+            // ── Résolution de la catégorie (Produit -> Catégorie, Meta CAPI, ou URL) ──
+            ->selectRaw("(
+                SELECT COALESCE(
+                    c_prod.name,
+                    c_slug.name,
+                    ve_cat.meta->>'category_name',
+                    ve_cat.meta->>'category',
+                    NULLIF(ve_cat.product_type, '')
+                )
+                FROM visitor_events as ve_cat
+                LEFT JOIN products p ON (
+                    p.id = ve_cat.product_id
+                    OR (ve_cat.product_id IS NULL AND (ve_cat.meta->>'product_name') IS NOT NULL AND p.name = ve_cat.meta->>'product_name')
+                )
+                LEFT JOIN categories c_prod ON c_prod.id = p.category_id
+                LEFT JOIN categories c_slug ON (
+                    ve_cat.url LIKE '%/' || c_slug.slug
+                    OR ve_cat.url LIKE '%/' || c_slug.slug || '/%'
+                    OR ve_cat.url LIKE '%category=' || c_slug.slug || '%'
+                )
+                WHERE ve_cat.visitor_id = ve.visitor_id
+                  AND (
+                      c_prod.name IS NOT NULL
+                      OR c_slug.name IS NOT NULL
+                      OR (ve_cat.meta->>'category_name') IS NOT NULL
+                      OR (ve_cat.meta->>'category') IS NOT NULL
+                      OR (ve_cat.product_type IS NOT NULL AND ve_cat.product_type != '')
+                  )
+                ORDER BY ve_cat.created_at DESC
+                LIMIT 1
+            ) as category_name")
             ->selectRaw("MAX(CASE
                 WHEN ve.referrer ILIKE '%facebook%' THEN 'Facebook'
                 WHEN ve.referrer ILIKE '%instagram%' THEN 'Instagram'
@@ -87,14 +117,37 @@ class StatsController extends Controller
 
         $visitors = $visitorsQuery->cursorPaginate($perPage);
 
-        // ── Chart data ──
-        $daily = VisitorEvent::query()
+        // ── Chart data (Performance du Tunnel: 5 courbes sur toute la période) ──
+        $dailyRaw = VisitorEvent::query()
             ->whereBetween('created_at', [$start, $end])
-            ->where('event_type', VisitorEvent::TYPE_PAGE_VIEW)
-            ->selectRaw('DATE(created_at) as date, COUNT(DISTINCT visitor_id) as visitors')
+            ->selectRaw('DATE(created_at) as date')
+            ->selectRaw("COUNT(DISTINCT CASE WHEN event_type = ? THEN visitor_id END) as page_views", [VisitorEvent::TYPE_PAGE_VIEW])
+            ->selectRaw("COUNT(DISTINCT CASE WHEN event_type = ? THEN visitor_id END) as product_views", [VisitorEvent::TYPE_PRODUCT_VIEW])
+            ->selectRaw("COUNT(DISTINCT CASE WHEN event_type = ? THEN visitor_id END) as add_to_cart", [VisitorEvent::TYPE_ADD_TO_CART])
+            ->selectRaw("COUNT(DISTINCT CASE WHEN event_type = ? THEN visitor_id END) as checkout", [VisitorEvent::TYPE_CHECKOUT_START])
+            ->selectRaw("COUNT(DISTINCT CASE WHEN event_type = ? THEN visitor_id END) as purchase", [VisitorEvent::TYPE_PURCHASE])
             ->groupByRaw('DATE(created_at)')
             ->orderBy('date')
-            ->get();
+            ->get()
+            ->keyBy(function ($item) {
+                return Carbon::parse($item->date)->format('Y-m-d');
+            });
+
+        // Remplir tous les jours de la période pour assurer des courbes fluides et continues
+        $daily = [];
+        $period = Carbon::parse($start)->daysUntil($end);
+        foreach ($period as $date) {
+            $dateKey = $date->format('Y-m-d');
+            $entry = $dailyRaw->get($dateKey);
+            $daily[] = [
+                'date'          => $dateKey,
+                'page_views'    => (int) ($entry->page_views ?? 0),
+                'product_views' => (int) ($entry->product_views ?? 0),
+                'add_to_cart'   => (int) ($entry->add_to_cart ?? 0),
+                'checkout'      => (int) ($entry->checkout ?? 0),
+                'purchase'      => (int) ($entry->purchase ?? 0),
+            ];
+        }
 
         // ── Mini list ──
         $recentVisitors = VisitorEvent::query()

@@ -1,6 +1,6 @@
 import { useState, Fragment } from 'react';
 import {
-    Globe, Clock, Users, Check, X,
+    Globe, Clock, Calendar, Users, Check, X,
     ChevronLeft, ChevronRight, ChevronDown,
     ShoppingCart, Smartphone, Monitor, Tablet
 } from 'lucide-react';
@@ -29,6 +29,39 @@ const PLATFORM_ICONS = {
     desktop: { icon: Monitor, color: 'text-blue-400', label: 'Desktop' },
     unknown: { icon: Monitor, color: 'text-gray-500', label: 'Inconnu' },
 };
+
+function formatLastSeen(dateStr) {
+    if (!dateStr) return { text: '—', isToday: true };
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return { text: dateStr, isToday: true };
+
+    const today = new Date();
+    const isToday =
+        date.getDate() === today.getDate() &&
+        date.getMonth() === today.getMonth() &&
+        date.getFullYear() === today.getFullYear();
+
+    if (isToday) {
+        // Today -> show only the time (e.g. 15:42)
+        return {
+            text: date.toLocaleTimeString('fr-FR', {
+                hour: '2-digit',
+                minute: '2-digit',
+            }),
+            isToday: true,
+        };
+    }
+
+    // Previous days -> show only the date (e.g. 24/10/2024)
+    return {
+        text: date.toLocaleDateString('fr-FR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+        }),
+        isToday: false,
+    };
+}
 
 export default function LiveVisitorsTable({ visitors, pagination, filters }) {
     const prev_cursor = pagination?.prev_cursor ?? pagination?.previous_cursor ?? null;
@@ -122,7 +155,7 @@ export default function LiveVisitorsTable({ visitors, pagination, filters }) {
                             <th className="text-left px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest w-[100px]">
                                 Source
                             </th>
-                            <th className="text-left px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest w-[120px]">
+                            <th className="text-left px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest w-[130px]">
                                 Dernière activité
                             </th>
                             {COLUMNS.map((col) => (
@@ -139,7 +172,7 @@ export default function LiveVisitorsTable({ visitors, pagination, filters }) {
                                     Produit ajouté
                                 </div>
                             </th>
-                            <th className="text-left px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest w-[120px]">
+                            <th className="text-left px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest w-[140px]">
                                 Catégorie
                             </th>
                             <th className="text-left px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest w-[100px]">
@@ -163,6 +196,7 @@ export default function LiveVisitorsTable({ visitors, pagination, filters }) {
                         ) : (
                             visitors.map((visitor) => {
                                 const isExpanded = expandedVisitor === visitor.visitor_id;
+                                const lastSeen = formatLastSeen(visitor.last_seen);
 
                                 return (
                                     <Fragment key={`group-${visitor.visitor_id}`}>
@@ -198,14 +232,15 @@ export default function LiveVisitorsTable({ visitors, pagination, filters }) {
                                                 </span>
                                             </td>
 
-                                            {/* Last Seen */}
+                                            {/* Last Seen (Time if today, Date if previous days) */}
                                             <td className="px-4 py-3.5">
-                                                <div className="flex items-center gap-1.5 text-xs text-gray-400">
-                                                    <Clock className="w-3 h-3" />
-                                                    {new Date(visitor.last_seen).toLocaleTimeString('fr-FR', {
-                                                        hour: '2-digit',
-                                                        minute: '2-digit',
-                                                    })}
+                                                <div className="flex items-center gap-1.5 text-xs text-gray-300 font-mono">
+                                                    {lastSeen.isToday ? (
+                                                        <Clock className="w-3.5 h-3.5 text-gray-500" />
+                                                    ) : (
+                                                        <Calendar className="w-3.5 h-3.5 text-amber-500/70" />
+                                                    )}
+                                                    <span>{lastSeen.text}</span>
                                                 </div>
                                             </td>
 
@@ -230,13 +265,15 @@ export default function LiveVisitorsTable({ visitors, pagination, filters }) {
                                             {/* Produit ajouté */}
                                             <td className="px-4 py-3.5">
                                                 {visitor.has_cart == 1 && visitor.cart_product_name ? (
-                                                    <span className="text-xs text-gray-400 truncate max-w-[160px]" title={visitor.cart_product_name}>
+                                                    <span className="text-xs text-gray-300 truncate max-w-[160px] block" title={visitor.cart_product_name}>
                                                         {visitor.cart_product_name}
                                                     </span>
                                                 ) : (
                                                     <span className="text-gray-600 text-xs">—</span>
                                                 )}
                                             </td>
+
+                                            {/* Catégorie */}
                                             <td className="px-4 py-3.5">
                                                 {getCategoryLabel(visitor)}
                                             </td>
@@ -254,7 +291,7 @@ export default function LiveVisitorsTable({ visitors, pagination, filters }) {
                                             </td>
                                         </tr>
 
-                                        {/* Ligne expandée - PARCOURS */}
+                                        {/* Expanded Visitor Journey Row */}
                                         {isExpanded && (
                                             <tr className="bg-gray-950/30">
                                                 <td colSpan={12} className="px-0 py-0">
@@ -314,37 +351,21 @@ function getStatusColor(v) {
     if (v.has_page_view) return 'text-blue-400';
     return 'text-gray-500';
 }
+
 function getCategoryLabel(visitor) {
-    // Si achat → pas de catégorie spécifique (ou tu peux ajouter)
-    if (visitor.has_purchase) return <span className="text-emerald-500/70 text-xs">—</span>;
-    
-    // Si checkout → catégorie du dernier panier
-    if (visitor.has_checkout && visitor.cart_category_name) {
+    const category = visitor.category_name || visitor.cart_category_name || visitor.view_category_name;
+
+    if (category) {
         return (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-pink-500/10 text-pink-300 border border-pink-500/20">
-                {visitor.cart_category_name}
+            <span
+                className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-purple-500/10 text-purple-300 border border-purple-500/20 max-w-[130px] truncate"
+                title={category}
+            >
+                {category}
             </span>
         );
     }
-    
-    // Si panier → catégorie du produit dans le panier
-    if (visitor.has_cart && visitor.cart_category_name) {
-        return (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/20">
-                {visitor.cart_category_name}
-            </span>
-        );
-    }
-    
-    // Si produit vu → catégorie du produit vu
-    if (visitor.has_product_view && visitor.view_category_name) {
-        return (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-purple-500/10 text-purple-300 border border-purple-500/20">
-                {visitor.view_category_name}
-            </span>
-        );
-    }
-    
+
     return <span className="text-gray-600 text-xs">—</span>;
 }
 
