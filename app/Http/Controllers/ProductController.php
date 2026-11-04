@@ -43,6 +43,46 @@ class ProductController extends Controller
         ]);
     }
 
+    public function landing($id)
+    {
+        $product = Product::with(['category', 'images', 'sizes'])
+            ->where('is_active', true)
+            ->findOrFail($id);
+
+        $this->tracker->log(request(), VisitorEvent::TYPE_PRODUCT_VIEW, [
+            'product_id'    => $product->id,
+            'product_name'  => $product->name,
+            'product_type'  => 'ad_landing',
+            'category_name' => $product->category?->name,
+        ]);
+
+        $spatieImages = $product->getMedia('images');
+
+        if ($spatieImages->isNotEmpty()) {
+            $images = $spatieImages->map(fn($m) => [
+                'src'    => $m->getUrl('full'),
+                'srcset' => $m->getUrl('thumb') . ' 400w, ' . $m->getUrl('full') . ' 800w',
+            ])->toArray();
+        } else {
+            $images = $product->images
+                ->map(fn($img) => [
+                    'src'    => '/storage/' . $img->image_path,
+                    'srcset' => null,
+                ])->toArray();
+        }
+
+        $formattedProduct = [
+            ...$this->formatProduct($product),
+            'description' => $product->description,
+            'images'      => $images,
+            'sizes'       => $product->sizes->pluck('name')->toArray(),
+        ];
+
+        return Inertia::render('ProductLanding', [
+            'product' => $formattedProduct,
+        ]);
+    }
+
     public function products(Request $request)
     {
         $categoryName = $request->query('category', 'tous');

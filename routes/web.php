@@ -29,6 +29,7 @@ Route::middleware('auth')->group(function () {
 });
 Route::get('/', [ProductController::class, 'home'])->name('home');
 Route::get('/produits', [ProductController::class, 'products'])->name('products');
+Route::get('/l/{id}', [ProductController::class, 'landing'])->name('product.landing');
 Route::get('/a-propos', [ProductController::class, 'about'])->name('about');
 Route::get('/produit/{id}', [ProductController::class, 'show'])->name('product.show');
 

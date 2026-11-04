@@ -45,6 +45,22 @@ const ProductBadge = ({ tag, discount }) => {
         </motion.div>
     );
 };
+// Helper to determine the return URL based on the product's category
+const getCollectionRoute = (categoryName) => {
+    if (!categoryName) return route('products');
+
+    // Remove accents and lowercase to match reliably (e.g., "survêtement sport" -> "survetement sport")
+    const clean = categoryName
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
+    if (clean.includes('survetement')) return route('survetements');
+    if (clean.includes('pyjama')) return route('pyjamas');
+    if (clean.includes('chemise')) return route('chemises');
+
+    return route('products');
+};
 
 export default function ProductShow({ product, recommendations }) {
     const [selectedSize, setSelectedSize] = useState(null);
@@ -72,7 +88,7 @@ export default function ProductShow({ product, recommendations }) {
                 setTimeout(() => setToast(false), 3000);
                 setCartOpen(true);
                 // Réinitialiser la quantité après ajout (optionnel, mais propre)
-                setQuantity(1); 
+                setQuantity(1);
 
                 window.trackMetaEvent('add_to_cart', {
                     product_id: product.id,
@@ -182,7 +198,7 @@ export default function ProductShow({ product, recommendations }) {
                                                 <p className="font-serif text-charcoal text-sm truncate">{item.name}</p>
                                                 <p className="text-[10px] uppercase tracking-widest text-charcoal/50 mt-1 font-bold">Taille : {item.size}</p>
                                                 <p className="text-burgundy font-bold text-sm mt-1">{item.price.toFixed(2)} DT</p>
-                                                
+
                                                 <div className="flex items-center gap-3 mt-auto">
                                                     <button
                                                         onClick={() => updateQty(item.key, item.quantity - 1)}
@@ -241,18 +257,26 @@ export default function ProductShow({ product, recommendations }) {
             {/* Breadcrumb Élégant */}
             <div className="bg-[#F9F8F6] border-b border-burgundy/10 py-3 px-4">
                 <div className="max-w-7xl mx-auto flex items-center text-[10px] uppercase tracking-widest font-bold text-charcoal/50">
-                    <Link href={route('products')} className="flex items-center hover:text-burgundy transition-colors">
+                    <Link
+                        href={getCollectionRoute(product.category)}
+                        className="flex items-center hover:text-burgundy transition-colors"
+                    >
                         <ArrowLeft size={14} className="mr-2" /> Retour à la collection
                     </Link>
                     <span className="mx-3">/</span>
-                    <span className="text-burgundy">{product.category}</span>
+                    <Link
+                        href={getCollectionRoute(product.category)}
+                        className="text-burgundy hover:underline uppercase"
+                    >
+                        {product.category}
+                    </Link>
                 </div>
             </div>
 
             {/* Contenu Principal */}
             <div className="max-w-7xl mx-auto px-4 py-8 md:py-16">
                 <div className="flex flex-col lg:flex-row gap-10 lg:gap-20">
-                    
+
                     {/* Colonne Gauche : Images */}
                     <div className="w-full lg:w-1/2 flex flex-col-reverse md:flex-row gap-4 h-fit sticky top-24">
                         {/* Miniatures */}
@@ -261,9 +285,8 @@ export default function ProductShow({ product, recommendations }) {
                                 <button
                                     key={index}
                                     onClick={() => setMainImage(img.src)}
-                                    className={`relative aspect-[3/4] md:w-full w-20 bg-[#F9F8F6] overflow-hidden flex-shrink-0 transition-all duration-300 ${
-                                        mainImage === img.src ? 'border border-burgundy opacity-100 shadow-sm' : 'border border-transparent opacity-50 hover:opacity-100'
-                                    }`}
+                                    className={`relative aspect-[3/4] md:w-full w-20 bg-[#F9F8F6] overflow-hidden flex-shrink-0 transition-all duration-300 ${mainImage === img.src ? 'border border-burgundy opacity-100 shadow-sm' : 'border border-transparent opacity-50 hover:opacity-100'
+                                        }`}
                                 >
                                     <img src={img.src} alt={`Vue ${index + 1}`} className="w-full h-full object-cover" />
                                 </button>
@@ -300,7 +323,7 @@ export default function ProductShow({ product, recommendations }) {
                     {/* Colonne Droite : Infos Produit */}
                     <div className="w-full lg:w-1/2 flex flex-col justify-center">
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                            
+
                             {/* Titre & Catégorie */}
                             <span className="text-burgundy font-bold text-[10px] tracking-[0.2em] uppercase mb-3 block">
                                 Collection {product.category}
@@ -349,11 +372,10 @@ export default function ProductShow({ product, recommendations }) {
                                         <button
                                             key={size}
                                             onClick={() => setSelectedSize(size)}
-                                            className={`py-3 text-[11px] uppercase tracking-widest font-bold transition-all duration-300 ${
-                                                selectedSize === size
-                                                    ? 'bg-charcoal text-cream shadow-md scale-105 border-transparent'
-                                                    : 'bg-white border border-burgundy/20 text-charcoal hover:border-burgundy hover:bg-[#F9F8F6]'
-                                            }`}
+                                            className={`py-3 text-[11px] uppercase tracking-widest font-bold transition-all duration-300 ${selectedSize === size
+                                                ? 'bg-charcoal text-cream shadow-md scale-105 border-transparent'
+                                                : 'bg-white border border-burgundy/20 text-charcoal hover:border-burgundy hover:bg-[#F9F8F6]'
+                                                }`}
                                         >
                                             {size}
                                         </button>
@@ -363,17 +385,17 @@ export default function ProductShow({ product, recommendations }) {
 
                             {/* ACTIONS : Quantité + Ajouter au Panier (Alignés) */}
                             <div className="flex items-center gap-3 mb-10 h-[54px]">
-                                
+
                                 {/* Sélecteur de Quantité */}
                                 <div className="flex items-center justify-between border border-burgundy/20 bg-white w-28 h-full shrink-0">
-                                    <button 
+                                    <button
                                         onClick={() => setQuantity(q => Math.max(1, q - 1))}
                                         className="w-10 h-full flex items-center justify-center text-charcoal/40 hover:text-burgundy transition-colors"
                                     >
                                         <Minus size={14} />
                                     </button>
                                     <span className="text-xs font-bold text-charcoal">{quantity}</span>
-                                    <button 
+                                    <button
                                         onClick={() => setQuantity(q => Math.min(10, q + 1))}
                                         className="w-10 h-full flex items-center justify-center text-charcoal/40 hover:text-burgundy transition-colors"
                                     >
@@ -385,16 +407,15 @@ export default function ProductShow({ product, recommendations }) {
                                 <button
                                     onClick={handleAddToCart}
                                     disabled={!selectedSize || processing}
-                                    className={`flex-1 h-full flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.2em] font-bold transition-all duration-300 shadow-lg ${
-                                        selectedSize
-                                            ? 'bg-burgundy text-cream hover:bg-charcoal hover:shadow-xl'
-                                            : 'bg-[#F9F8F6] border border-burgundy/10 text-charcoal/40 cursor-not-allowed'
-                                    }`}
+                                    className={`flex-1 h-full flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.2em] font-bold transition-all duration-300 shadow-lg ${selectedSize
+                                        ? 'bg-burgundy text-cream hover:bg-charcoal hover:shadow-xl'
+                                        : 'bg-[#F9F8F6] border border-burgundy/10 text-charcoal/40 cursor-not-allowed'
+                                        }`}
                                 >
                                     <ShoppingBag size={18} />
                                     {processing ? 'Ajout en cours...' : selectedSize ? 'Ajouter au panier' : 'Sélectionner la taille'}
                                 </button>
-                                
+
                             </div>
 
                             {/* Avantages Spécifiques Produits (Grille 2x2 élégante) */}
@@ -413,7 +434,7 @@ export default function ProductShow({ product, recommendations }) {
                                     </div>
                                 ))}
                             </div>
-                            
+
                             {/* Réassurance Livraison/Paiement */}
                             <div className="flex items-center justify-center gap-8 mt-10 p-6 bg-[#F9F8F6] border border-burgundy/5 text-center">
                                 <div className="flex flex-col items-center gap-2">
@@ -431,7 +452,7 @@ export default function ProductShow({ product, recommendations }) {
                     </div>
                 </div>
             </div>
-             {/* --- AVIS SUR CE PRODUIT --- */}
+            {/* --- AVIS SUR CE PRODUIT --- */}
             <div className="max-w-7xl mx-auto px-4">
                 <ReviewsCarousel
                     eyebrow="Ce qu'elles en disent"
@@ -442,7 +463,7 @@ export default function ProductShow({ product, recommendations }) {
             {/* --- SECTION RECOMMANDATIONS --- */}
             <div className="bg-[#F9F8F6] py-20 border-t border-burgundy/10 mt-12">
                 <div className="max-w-7xl mx-auto px-4">
-                    
+
                     <div className="text-center mb-14">
                         <h2 className="text-3xl md:text-4xl font-dream text-charcoal">Vous aimerez aussi</h2>
                         <div className="flex justify-center items-center gap-3 mt-4">
@@ -466,11 +487,11 @@ export default function ProductShow({ product, recommendations }) {
                                     <div className="relative aspect-[3/4] overflow-hidden bg-white mb-5 shadow-sm border border-burgundy/5 group-hover:shadow-md transition-all duration-500">
                                         <ProductBadge tag={rec.tag} discount={rec.discount_pct} />
 
-                                        <img 
-                                            src={rec.image} 
-                                            alt={rec.name} 
+                                        <img
+                                            src={rec.image}
+                                            alt={rec.name}
                                             loading="lazy"
-                                            className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-700 ease-in-out" 
+                                            className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-700 ease-in-out"
                                         />
 
                                         <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out hidden md:block">
