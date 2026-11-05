@@ -99,6 +99,7 @@ export default function LiveVisitorsTable({ visitors, pagination, filters }) {
     return (
         <div className="bg-gray-900/60 border border-gray-800/60 rounded-2xl overflow-hidden">
             {/* Header */}
+           {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800/60">
                 <div className="flex items-center gap-2.5">
                     <div className="p-1.5 rounded-lg bg-gray-800/50">
@@ -110,6 +111,33 @@ export default function LiveVisitorsTable({ visitors, pagination, filters }) {
                 </div>
 
                 <div className="flex items-center gap-4">
+                    {/* 🔥 FILTRE PAR STATUT */}
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">Statut</span>
+                        <select
+                            value={filters?.status || 'all'}
+                            onChange={(e) => {
+                                const params = new URLSearchParams(window.location.search);
+                                if (e.target.value === 'all') {
+                                    params.delete('status');
+                                } else {
+                                    params.set('status', e.target.value);
+                                }
+                                params.delete('cursor');
+                                window.location.href = `${window.location.pathname}?${params.toString()}`;
+                            }}
+                            className="bg-gray-800/50 border border-gray-700/50 rounded-lg text-xs text-gray-300 px-2.5 py-1 outline-none focus:border-gray-500 cursor-pointer"
+                        >
+                            <option value="all">Tous les statuts</option>
+                            <option value="page_view">Trafic</option>
+                            <option value="product_view">Produit vu</option>
+                            <option value="cart">Panier</option>
+                            <option value="checkout">Checkout</option>
+                            <option value="purchase">Achat</option>
+                        </select>
+                    </div>
+
+                    {/* Afficher par page */}
                     <div className="flex items-center gap-2">
                         <span className="text-xs text-gray-500">Afficher</span>
                         <select

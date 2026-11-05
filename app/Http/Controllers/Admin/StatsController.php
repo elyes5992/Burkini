@@ -24,10 +24,31 @@ class StatsController extends Controller
         }
 
         $hideDirect = $request->boolean('hide_direct', false);
+        $status = $request->get('status', 'all');
 
-        // ── Funnel stats ──
-        $counts = VisitorEvent::query()
-            ->whereBetween('created_at', [$start, $end])
+        // ── Subquery: Non-Direct visitors if "Cacher Direct" is active ──
+        $nonDirectVisitors = null;
+        if ($hideDirect) {
+            $nonDirectVisitors = DB::table('visitor_events as ve')
+                ->whereBetween('ve.created_at', [$start, $end])
+                ->groupBy('ve.visitor_id')
+                ->havingRaw("MAX(CASE
+                    WHEN ve.referrer ILIKE '%facebook%' THEN 'Facebook'
+                    WHEN ve.referrer ILIKE '%instagram%' THEN 'Instagram'
+                    WHEN ve.referrer ILIKE '%google%' THEN 'Google'
+                    WHEN ve.referrer IS NULL OR ve.referrer = '' THEN 'Direct'
+                    ELSE 'Autre'
+                END) != 'Direct'")
+                ->select('ve.visitor_id');
+        }
+
+        // ── 1. Funnel stats (Applies hide_direct to KPIs) ──
+        $funnelQuery = VisitorEvent::query()->whereBetween('created_at', [$start, $end]);
+        if ($hideDirect) {
+            $funnelQuery->whereIn('visitor_id', $nonDirectVisitors);
+        }
+
+        $counts = $funnelQuery
             ->selectRaw('event_type, COUNT(DISTINCT visitor_id) as visitors')
             ->groupBy('event_type')
             ->pluck('visitors', 'event_type');
@@ -40,7 +61,7 @@ class StatsController extends Controller
             'achats'   => (int) ($counts[VisitorEvent::TYPE_PURCHASE] ?? 0),
         ];
 
-        // ── Visitors paginés ──
+        // ── 2. Visitors paginés (Table) ──
         $perPage = (int) $request->get('per_page', 25);
         $perPage = min(max($perPage, 10), 100);
 
@@ -61,7 +82,6 @@ class StatsController extends Controller
                 ORDER BY ve2.created_at DESC
                 LIMIT 1
             ) as cart_product_name", [VisitorEvent::TYPE_ADD_TO_CART])
-            // ── Résolution de la catégorie (Produit -> Catégorie, Meta CAPI, ou URL) ──
             ->selectRaw("(
                 SELECT COALESCE(
                     c_prod.name,
@@ -99,27 +119,40 @@ class StatsController extends Controller
                 WHEN ve.referrer IS NULL OR ve.referrer = '' THEN 'Direct'
                 ELSE 'Autre'
             END) as source")
-            ->whereBetween('ve.created_at', [$start, $end])
-            ->groupBy('ve.visitor_id')
-            ->orderByDesc('last_seen')
-            ->orderByDesc('ve.visitor_id');
+            ->whereBetween('ve.created_at', [$start, $end]);
 
-        // Filtre pour cacher les visites Direct
+        // Cacher Direct sur la table
         if ($hideDirect) {
-            $visitorsQuery->havingRaw("MAX(CASE
-                WHEN ve.referrer ILIKE '%facebook%' THEN 'Facebook'
-                WHEN ve.referrer ILIKE '%instagram%' THEN 'Instagram'
-                WHEN ve.referrer ILIKE '%google%' THEN 'Google'
-                WHEN ve.referrer IS NULL OR ve.referrer = '' THEN 'Direct'
-                ELSE 'Autre'
-            END) != 'Direct'");
+            $visitorsQuery->whereIn('ve.visitor_id', $nonDirectVisitors);
         }
 
-        $visitors = $visitorsQuery->cursorPaginate($perPage);
+        $visitorsQuery->groupBy('ve.visitor_id');
 
-        // ── Chart data (Performance du Tunnel: 5 courbes sur toute la période) ──
-        $dailyRaw = VisitorEvent::query()
-            ->whereBetween('created_at', [$start, $end])
+        // 🔥 Filtre par Statut / Action
+        if ($status && $status !== 'all') {
+            $statusCase = "CASE
+                WHEN MAX(CASE WHEN ve.event_type = '" . VisitorEvent::TYPE_PURCHASE . "' THEN 1 ELSE 0 END) = 1 THEN 'purchase'
+                WHEN MAX(CASE WHEN ve.event_type = '" . VisitorEvent::TYPE_CHECKOUT_START . "' THEN 1 ELSE 0 END) = 1 THEN 'checkout'
+                WHEN MAX(CASE WHEN ve.event_type = '" . VisitorEvent::TYPE_ADD_TO_CART . "' THEN 1 ELSE 0 END) = 1 THEN 'cart'
+                WHEN MAX(CASE WHEN ve.event_type = '" . VisitorEvent::TYPE_PRODUCT_VIEW . "' THEN 1 ELSE 0 END) = 1 THEN 'product_view'
+                WHEN MAX(CASE WHEN ve.event_type = '" . VisitorEvent::TYPE_PAGE_VIEW . "' THEN 1 ELSE 0 END) = 1 THEN 'page_view'
+                ELSE 'bounce'
+            END";
+            $visitorsQuery->havingRaw("{$statusCase} = ?", [$status]);
+        }
+
+        $visitors = $visitorsQuery
+            ->orderByDesc('last_seen')
+            ->orderByDesc('ve.visitor_id')
+            ->cursorPaginate($perPage);
+
+        // ── 3. Chart data (Applies hide_direct to Performance du Tunnel) ──
+        $dailyQuery = VisitorEvent::query()->whereBetween('created_at', [$start, $end]);
+        if ($hideDirect) {
+            $dailyQuery->whereIn('visitor_id', $nonDirectVisitors);
+        }
+
+        $dailyRaw = $dailyQuery
             ->selectRaw('DATE(created_at) as date')
             ->selectRaw("COUNT(DISTINCT CASE WHEN event_type = ? THEN visitor_id END) as page_views", [VisitorEvent::TYPE_PAGE_VIEW])
             ->selectRaw("COUNT(DISTINCT CASE WHEN event_type = ? THEN visitor_id END) as product_views", [VisitorEvent::TYPE_PRODUCT_VIEW])
@@ -133,7 +166,6 @@ class StatsController extends Controller
                 return Carbon::parse($item->date)->format('Y-m-d');
             });
 
-        // Remplir tous les jours de la période pour assurer des courbes fluides et continues
         $daily = [];
         $period = Carbon::parse($start)->daysUntil($end);
         foreach ($period as $date) {
@@ -160,16 +192,17 @@ class StatsController extends Controller
             ->get();
 
         return Inertia::render('Admin/Stats', [
-            'funnel' => $funnel,
-            'visitors' => $visitors,
-            'daily' => $daily,
-            'range' => $range,
-            'start' => $start->format('Y-m-d'),
-            'end' => $end->format('Y-m-d'),
+            'funnel'         => $funnel,
+            'visitors'       => $visitors,
+            'daily'          => $daily,
+            'range'          => $range,
+            'start'          => $start->format('Y-m-d'),
+            'end'            => $end->format('Y-m-d'),
             'recentVisitors' => $recentVisitors,
-            'filters' => [
-                'per_page' => $perPage,
+            'filters'        => [
+                'per_page'    => $perPage,
                 'hide_direct' => $hideDirect,
+                'status'      => $status,
             ],
         ]);
     }
@@ -206,7 +239,7 @@ class StatsController extends Controller
         return response()->json([
             'visitor_id' => $visitorId,
             'total_steps' => $journey->count(),
-            'duration_minutes' => $events->count() > 1 
+            'duration_minutes' => $events->count() > 1
                 ? round($events->last()->created_at->diffInMinutes($events->first()->created_at), 1)
                 : 0,
             'journey' => $journey,
