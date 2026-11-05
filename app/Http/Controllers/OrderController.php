@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Models\Order;
 use App\Services\VisitorTracker;
 use App\Models\VisitorEvent;
+use App\Services\NtfyService; // <-- Added
 
 class OrderController extends Controller
 {
@@ -34,7 +35,8 @@ class OrderController extends Controller
         $subtotal = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
         $delivery = $this->deliveryFee($subtotal);
         $total    = $subtotal + $delivery;
-         // 🔥 TRACK CHECKOUT START
+
+        // 🔥 TRACK CHECKOUT START
         $this->tracker->log(request(), VisitorEvent::TYPE_CHECKOUT_START, [
             'items_count' => count($cart),
             'subtotal'    => $subtotal,
@@ -42,11 +44,11 @@ class OrderController extends Controller
         ]);
 
         return Inertia::render('Checkout', [
-            'cart'         => array_values($cart),
-            'subtotal'     => $subtotal,
-            'deliveryFee'  => $delivery,
+            'cart'            => array_values($cart),
+            'subtotal'        => $subtotal,
+            'deliveryFee'     => $delivery,
             'freeDeliveryMin' => self::FREE_DELIVERY_MIN,
-            'total'        => $total,
+            'total'           => $total,
         ]);
     }
 
@@ -88,6 +90,9 @@ class OrderController extends Controller
                 'subtotal'      => $item['price'] * $item['quantity'],
             ]);
         }
+
+        // 🔔 Send ntfy notification to your phone
+        NtfyService::notifyNewOrder($order);
 
         // 🔥 TRACK PURCHASE
         $this->tracker->log($request, VisitorEvent::TYPE_PURCHASE, [
