@@ -99,7 +99,7 @@ export default function LiveVisitorsTable({ visitors, pagination, filters }) {
     return (
         <div className="bg-gray-900/60 border border-gray-800/60 rounded-2xl overflow-hidden">
             {/* Header */}
-           {/* Header */}
+            {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800/60">
                 <div className="flex items-center gap-2.5">
                     <div className="p-1.5 rounded-lg bg-gray-800/50">
@@ -246,10 +246,27 @@ export default function LiveVisitorsTable({ visitors, pagination, filters }) {
                                                 </button>
                                             </td>
 
-                                            {/* Visitor ID */}
+                                            {/* Visitor ID & Déjà client Badge */}
                                             <td className="px-6 py-3.5">
-                                                <div className="text-sm font-mono text-gray-200 font-medium">
-                                                    visiteur_{visitor.visitor_id.slice(0, 8)}
+                                                <div className="flex flex-col gap-1 items-start">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-sm font-mono text-gray-200 font-medium">
+                                                            visiteur_{visitor.visitor_id.slice(0, 8)}
+                                                        </span>
+                                                        {visitor.is_client && (
+                                                            <span
+                                                                className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 whitespace-nowrap"
+                                                                title={`${visitor.total_purchases} commande(s) effectuée(s)`}
+                                                            >
+                                                                Déjà client
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    {visitor.is_reentered && (
+                                                        <span className="text-[10px] text-amber-400/90 font-medium">
+                                                            ↳ Nouvelle visite
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </td>
 

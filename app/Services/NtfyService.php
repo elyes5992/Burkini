@@ -19,46 +19,73 @@ class NtfyService
         try {
             $order->loadMissing('items');
 
-            // Format items list
+            // Formater la liste des articles
             $itemsSummary = $order->items->map(function ($item) {
-                $size = $item->size ? " ({$item->size})" : '';
+                $size = $item->size ? " (Taille : {$item->size})" : '';
                 return "• {$item->quantity}x {$item->product_name}{$size}";
             })->implode("\n");
 
             $total = number_format($order->total_price, 3, '.', ' ');
-            $city = $order->customer_city ? " ({$order->customer_city})" : '';
 
-            $message = "👤 Client : {$order->customer_name}{$city}\n"
-                     . "📞 Tél : {$order->customer_phone}\n"
-                     . "📍 Adresse : {$order->customer_address}\n\n"
-                     . "📦 Articles :\n{$itemsSummary}\n\n"
-                     . "💰 Total : {$total} TND";
+            // Formater l'adresse et ville
+            $addressParts = array_filter([$order->customer_city, $order->customer_address]);
+            $location = implode(' — ', $addressParts) ?: 'Non spécifiée';
+
+            // Message clair, épuré et bien aéré
+            $lines = [
+                "👤 Client : {$order->customer_name}",
+                "📞 Tél : {$order->customer_phone}",
+                "📍 Adresse : {$location}",
+                "",
+                "📦 Articles :",
+                $itemsSummary ?: "• Aucun article",
+                "",
+                "💰 Total : {$total} TND",
+            ];
+
+            if (!empty($order->notes)) {
+                $lines[] = "";
+                $lines[] = "📝 Note : {$order->notes}";
+            }
+
+            $message = implode("\n", $lines);
 
             $adminOrderUrl = url("/admin/orders/{$order->id}/edit");
-            $phoneClean = preg_replace('/[^0-9+]/', '', $order->customer_phone);
+            $phoneClean = preg_replace('/[^0-9+]/', '', (string) $order->customer_phone);
 
-            Http::timeout(5)->post("https://ntfy.sh/{$topic}", [
+            $payload = [
                 'topic'    => $topic,
-                'title'    => "🛍️ Nouvelle Commande #{$order->id} — {$total} TND",
+                'title'    => "🛍️ Commande #{$order->id} — {$total} TND",
                 'message'  => $message,
-                'priority' => 4, // High priority (audible ring & vibration)
-                'tags'     => ['shopping_bags', 'moneybag', 'tada'],
-                'click'    => $adminOrderUrl,
+                'priority' => 4, // Priorité haute (sonnerie & vibration)
+                'tags'     => ['shopping_bags', 'moneybag'],
+                'click'    => $adminOrderUrl, // Cliquer sur la notification ouvre la commande
                 'actions'  => [
                     [
                         'action' => 'view',
-                        'label'  => 'Appeler client',
+                        'label'  => '📞 Appeler client',
                         'url'    => "tel:{$phoneClean}",
                     ],
                     [
                         'action' => 'view',
-                        'label'  => 'Voir commande',
+                        'label'  => '📋 Voir commande',
                         'url'    => $adminOrderUrl,
                     ],
                 ],
-            ]);
+            ];
+
+            // ⚠️ Envoi vers https://ntfy.sh (racine) avec JSON_UNESCAPED_UNICODE pour l'Arabe et les émojis
+            Http::timeout(5)
+                ->withHeaders([
+                    'Content-Type' => 'application/json; charset=utf-8',
+                ])
+                ->withBody(
+                    json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                    'application/json'
+                )
+                ->post('https://ntfy.sh');
+
         } catch (\Throwable $e) {
-            // Silently log error so order creation never breaks if ntfy is down
             Log::error('Erreur ntfy notification: ' . $e->getMessage());
         }
     }

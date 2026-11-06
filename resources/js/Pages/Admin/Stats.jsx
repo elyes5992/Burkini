@@ -4,11 +4,10 @@ import { EyeOff, Eye } from 'lucide-react';
 import DateRangePicker from '../../Components/Admin/DateRangePicker';
 import FunnelCards from '../../Components/Admin/FunnelCards';
 import LiveVisitorsTable from '../../Components/Admin/LiveVisitorsTable';
-
 import TrafficChart from '../../Components/Admin/TrafficChart';
 
 export default function Stats({ funnel, visitors, daily, range, start, end, recentVisitors, filters }) {
-    const hideDirect = filters?.hide_direct ?? false;
+    const hideDirect = filters?.hide_direct ?? true;
 
     const handleDateChange = (newRange) => {
         const params = new URLSearchParams(window.location.search);
@@ -20,11 +19,7 @@ export default function Stats({ funnel, visitors, daily, range, start, end, rece
 
     const toggleHideDirect = () => {
         const params = new URLSearchParams(window.location.search);
-        if (hideDirect) {
-            params.delete('hide_direct');
-        } else {
-            params.set('hide_direct', '1');
-        }
+        params.set('hide_direct', hideDirect ? '0' : '1');
         params.delete('cursor');
         window.location.href = `${window.location.pathname}?${params.toString()}`;
     };
@@ -96,8 +91,6 @@ export default function Stats({ funnel, visitors, daily, range, start, end, rece
                     pagination={visitors || {}}
                     filters={filters || {}}
                 />
-
-              
 
                 {/* 4. Traffic Chart */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -23,10 +23,14 @@ class StatsController extends Controller
             [$start, $end] = $this->dateRange($range);
         }
 
-        $hideDirect = $request->boolean('hide_direct', false);
+        // ── Default hide_direct is TRUE (hide bots by default) ──
+        $hideDirect = $request->has('hide_direct')
+            ? $request->boolean('hide_direct')
+            : true;
+
         $status = $request->get('status', 'all');
 
-        // ── Subquery: Non-Direct visitors if "Cacher Direct" is active ──
+        // ── Subquery: Non-Direct visitors (bots) + Always keep real buyers ──
         $nonDirectVisitors = null;
         if ($hideDirect) {
             $nonDirectVisitors = DB::table('visitor_events as ve')
@@ -38,11 +42,11 @@ class StatsController extends Controller
                     WHEN ve.referrer ILIKE '%google%' THEN 'Google'
                     WHEN ve.referrer IS NULL OR ve.referrer = '' THEN 'Direct'
                     ELSE 'Autre'
-                END) != 'Direct'")
+                END) != 'Direct' OR MAX(CASE WHEN ve.event_type IN ('purchase', 'checkout_start', 'add_to_cart') THEN 1 ELSE 0 END) = 1")
                 ->select('ve.visitor_id');
         }
 
-        // ── 1. Funnel stats (Applies hide_direct to KPIs) ──
+        // ── 1. Funnel stats ──
         $funnelQuery = VisitorEvent::query()->whereBetween('created_at', [$start, $end]);
         if ($hideDirect) {
             $funnelQuery->whereIn('visitor_id', $nonDirectVisitors);
@@ -53,27 +57,50 @@ class StatsController extends Controller
             ->groupBy('event_type')
             ->pluck('visitors', 'event_type');
 
+        // Count every completed purchase transaction (matches the orders page)
+        $totalPurchases = (clone $funnelQuery)
+            ->where('event_type', VisitorEvent::TYPE_PURCHASE)
+            ->count();
+
         $funnel = [
             'arrives'  => (int) ($counts[VisitorEvent::TYPE_PAGE_VIEW] ?? 0),
             'vus'      => (int) ($counts[VisitorEvent::TYPE_PRODUCT_VIEW] ?? 0),
             'panier'   => (int) ($counts[VisitorEvent::TYPE_ADD_TO_CART] ?? 0),
             'checkout' => (int) ($counts[VisitorEvent::TYPE_CHECKOUT_START] ?? 0),
-            'achats'   => (int) ($counts[VisitorEvent::TYPE_PURCHASE] ?? 0),
+            'achats'   => (int) $totalPurchases,
         ];
 
         // ── 2. Visitors paginés (Table) ──
         $perPage = (int) $request->get('per_page', 25);
         $perPage = min(max($perPage, 10), 100);
 
+        // Subquery: Get lifetime purchases and latest purchase time per visitor
+        $purchaseSubquery = DB::table('visitor_events')
+            ->select('visitor_id')
+            ->selectRaw('COUNT(*) as purchase_count')
+            ->selectRaw('MAX(created_at) as last_purchase_at')
+            ->where('event_type', VisitorEvent::TYPE_PURCHASE)
+            ->groupBy('visitor_id');
+
         $visitorsQuery = DB::table('visitor_events as ve')
+            ->leftJoinSub($purchaseSubquery, 'vp', 'vp.visitor_id', '=', 've.visitor_id')
             ->select('ve.visitor_id')
             ->selectRaw('MAX(ve.created_at) as last_seen')
             ->selectRaw('MAX(ve.platform) as platform')
-            ->selectRaw("MAX(CASE WHEN ve.event_type = ? THEN 1 ELSE 0 END) as has_page_view", [VisitorEvent::TYPE_PAGE_VIEW])
-            ->selectRaw("MAX(CASE WHEN ve.event_type = ? THEN 1 ELSE 0 END) as has_product_view", [VisitorEvent::TYPE_PRODUCT_VIEW])
-            ->selectRaw("MAX(CASE WHEN ve.event_type = ? THEN 1 ELSE 0 END) as has_cart", [VisitorEvent::TYPE_ADD_TO_CART])
-            ->selectRaw("MAX(CASE WHEN ve.event_type = ? THEN 1 ELSE 0 END) as has_checkout", [VisitorEvent::TYPE_CHECKOUT_START])
-            ->selectRaw("MAX(CASE WHEN ve.event_type = ? THEN 1 ELSE 0 END) as has_purchase", [VisitorEvent::TYPE_PURCHASE])
+            ->selectRaw('COALESCE(MAX(vp.purchase_count), 0) as total_purchases')
+            ->selectRaw('MAX(vp.last_purchase_at) as last_purchase_at')
+            // Standard flags
+            ->selectRaw("MAX(CASE WHEN ve.event_type = ? THEN 1 ELSE 0 END) as has_page_view_raw", [VisitorEvent::TYPE_PAGE_VIEW])
+            ->selectRaw("MAX(CASE WHEN ve.event_type = ? THEN 1 ELSE 0 END) as has_product_view_raw", [VisitorEvent::TYPE_PRODUCT_VIEW])
+            ->selectRaw("MAX(CASE WHEN ve.event_type = ? THEN 1 ELSE 0 END) as has_cart_raw", [VisitorEvent::TYPE_ADD_TO_CART])
+            ->selectRaw("MAX(CASE WHEN ve.event_type = ? THEN 1 ELSE 0 END) as has_checkout_raw", [VisitorEvent::TYPE_CHECKOUT_START])
+            ->selectRaw("MAX(CASE WHEN ve.event_type = ? THEN 1 ELSE 0 END) as has_purchase_raw", [VisitorEvent::TYPE_PURCHASE])
+            // Post-purchase activity flags (if customer returned after buying)
+            ->selectRaw("MAX(CASE WHEN vp.last_purchase_at IS NOT NULL AND ve.created_at > vp.last_purchase_at THEN 1 ELSE 0 END) as has_post_activity")
+            ->selectRaw("MAX(CASE WHEN vp.last_purchase_at IS NOT NULL AND ve.created_at > vp.last_purchase_at AND ve.event_type = ? THEN 1 ELSE 0 END) as post_page_view", [VisitorEvent::TYPE_PAGE_VIEW])
+            ->selectRaw("MAX(CASE WHEN vp.last_purchase_at IS NOT NULL AND ve.created_at > vp.last_purchase_at AND ve.event_type = ? THEN 1 ELSE 0 END) as post_product_view", [VisitorEvent::TYPE_PRODUCT_VIEW])
+            ->selectRaw("MAX(CASE WHEN vp.last_purchase_at IS NOT NULL AND ve.created_at > vp.last_purchase_at AND ve.event_type = ? THEN 1 ELSE 0 END) as post_cart", [VisitorEvent::TYPE_ADD_TO_CART])
+            ->selectRaw("MAX(CASE WHEN vp.last_purchase_at IS NOT NULL AND ve.created_at > vp.last_purchase_at AND ve.event_type = ? THEN 1 ELSE 0 END) as post_checkout", [VisitorEvent::TYPE_CHECKOUT_START])
             ->selectRaw("(
                 SELECT ve2.meta->>'product_name'
                 FROM visitor_events as ve2
@@ -121,22 +148,34 @@ class StatsController extends Controller
             END) as source")
             ->whereBetween('ve.created_at', [$start, $end]);
 
-        // Cacher Direct sur la table
         if ($hideDirect) {
             $visitorsQuery->whereIn('ve.visitor_id', $nonDirectVisitors);
         }
 
         $visitorsQuery->groupBy('ve.visitor_id');
 
-        // 🔥 Filtre par Statut / Action
+        // 🔥 Filtre par Statut / Action (prend en compte la nouvelle session si ré-entré)
         if ($status && $status !== 'all') {
+            $postActivityCheck = "MAX(CASE WHEN vp.last_purchase_at IS NOT NULL AND ve.created_at > vp.last_purchase_at THEN 1 ELSE 0 END)";
+
             $statusCase = "CASE
-                WHEN MAX(CASE WHEN ve.event_type = '" . VisitorEvent::TYPE_PURCHASE . "' THEN 1 ELSE 0 END) = 1 THEN 'purchase'
-                WHEN MAX(CASE WHEN ve.event_type = '" . VisitorEvent::TYPE_CHECKOUT_START . "' THEN 1 ELSE 0 END) = 1 THEN 'checkout'
-                WHEN MAX(CASE WHEN ve.event_type = '" . VisitorEvent::TYPE_ADD_TO_CART . "' THEN 1 ELSE 0 END) = 1 THEN 'cart'
-                WHEN MAX(CASE WHEN ve.event_type = '" . VisitorEvent::TYPE_PRODUCT_VIEW . "' THEN 1 ELSE 0 END) = 1 THEN 'product_view'
-                WHEN MAX(CASE WHEN ve.event_type = '" . VisitorEvent::TYPE_PAGE_VIEW . "' THEN 1 ELSE 0 END) = 1 THEN 'page_view'
-                ELSE 'bounce'
+                WHEN {$postActivityCheck} = 1 THEN
+                    CASE
+                        WHEN MAX(CASE WHEN vp.last_purchase_at IS NOT NULL AND ve.created_at > vp.last_purchase_at AND ve.event_type = '" . VisitorEvent::TYPE_CHECKOUT_START . "' THEN 1 ELSE 0 END) = 1 THEN 'checkout'
+                        WHEN MAX(CASE WHEN vp.last_purchase_at IS NOT NULL AND ve.created_at > vp.last_purchase_at AND ve.event_type = '" . VisitorEvent::TYPE_ADD_TO_CART . "' THEN 1 ELSE 0 END) = 1 THEN 'cart'
+                        WHEN MAX(CASE WHEN vp.last_purchase_at IS NOT NULL AND ve.created_at > vp.last_purchase_at AND ve.event_type = '" . VisitorEvent::TYPE_PRODUCT_VIEW . "' THEN 1 ELSE 0 END) = 1 THEN 'product_view'
+                        WHEN MAX(CASE WHEN vp.last_purchase_at IS NOT NULL AND ve.created_at > vp.last_purchase_at AND ve.event_type = '" . VisitorEvent::TYPE_PAGE_VIEW . "' THEN 1 ELSE 0 END) = 1 THEN 'page_view'
+                        ELSE 'bounce'
+                    END
+                ELSE
+                    CASE
+                        WHEN MAX(CASE WHEN ve.event_type = '" . VisitorEvent::TYPE_PURCHASE . "' THEN 1 ELSE 0 END) = 1 THEN 'purchase'
+                        WHEN MAX(CASE WHEN ve.event_type = '" . VisitorEvent::TYPE_CHECKOUT_START . "' THEN 1 ELSE 0 END) = 1 THEN 'checkout'
+                        WHEN MAX(CASE WHEN ve.event_type = '" . VisitorEvent::TYPE_ADD_TO_CART . "' THEN 1 ELSE 0 END) = 1 THEN 'cart'
+                        WHEN MAX(CASE WHEN ve.event_type = '" . VisitorEvent::TYPE_PRODUCT_VIEW . "' THEN 1 ELSE 0 END) = 1 THEN 'product_view'
+                        WHEN MAX(CASE WHEN ve.event_type = '" . VisitorEvent::TYPE_PAGE_VIEW . "' THEN 1 ELSE 0 END) = 1 THEN 'page_view'
+                        ELSE 'bounce'
+                    END
             END";
             $visitorsQuery->havingRaw("{$statusCase} = ?", [$status]);
         }
@@ -146,7 +185,35 @@ class StatsController extends Controller
             ->orderByDesc('ve.visitor_id')
             ->cursorPaginate($perPage);
 
-        // ── 3. Chart data (Applies hide_direct to Performance du Tunnel) ──
+        // Transform results: if customer re-entered after purchasing, reinitialize pipeline to current visit
+        $visitors->through(function ($visitor) {
+            $hasPurchasedBefore = ((int) $visitor->total_purchases) > 0;
+            $isReentered = $hasPurchasedBefore && ((int) $visitor->has_post_activity) === 1;
+
+            $visitor->is_client = $hasPurchasedBefore;
+            $visitor->is_reentered = $isReentered;
+
+            if ($isReentered) {
+                $visitor->has_page_view = (int) $visitor->post_page_view;
+                $visitor->has_product_view = (int) $visitor->post_product_view;
+                $visitor->has_cart = (int) $visitor->post_cart;
+                $visitor->has_checkout = (int) $visitor->post_checkout;
+                $visitor->has_purchase = 0; // reinitialised for current session
+                if (!$visitor->has_cart) {
+                    $visitor->cart_product_name = null;
+                }
+            } else {
+                $visitor->has_page_view = (int) $visitor->has_page_view_raw;
+                $visitor->has_product_view = (int) $visitor->has_product_view_raw;
+                $visitor->has_cart = (int) $visitor->has_cart_raw;
+                $visitor->has_checkout = (int) $visitor->has_checkout_raw;
+                $visitor->has_purchase = (int) $visitor->has_purchase_raw;
+            }
+
+            return $visitor;
+        });
+
+        // ── 3. Chart data ──
         $dailyQuery = VisitorEvent::query()->whereBetween('created_at', [$start, $end]);
         if ($hideDirect) {
             $dailyQuery->whereIn('visitor_id', $nonDirectVisitors);
@@ -158,7 +225,7 @@ class StatsController extends Controller
             ->selectRaw("COUNT(DISTINCT CASE WHEN event_type = ? THEN visitor_id END) as product_views", [VisitorEvent::TYPE_PRODUCT_VIEW])
             ->selectRaw("COUNT(DISTINCT CASE WHEN event_type = ? THEN visitor_id END) as add_to_cart", [VisitorEvent::TYPE_ADD_TO_CART])
             ->selectRaw("COUNT(DISTINCT CASE WHEN event_type = ? THEN visitor_id END) as checkout", [VisitorEvent::TYPE_CHECKOUT_START])
-            ->selectRaw("COUNT(DISTINCT CASE WHEN event_type = ? THEN visitor_id END) as purchase", [VisitorEvent::TYPE_PURCHASE])
+            ->selectRaw("COUNT(CASE WHEN event_type = ? THEN 1 END) as purchase", [VisitorEvent::TYPE_PURCHASE])
             ->groupByRaw('DATE(created_at)')
             ->orderBy('date')
             ->get()
